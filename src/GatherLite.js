@@ -27,13 +27,12 @@ const SOCKET_SERVER = process.env.REACT_APP_SOCKET_SERVER || "http://localhost:5
   // -------------------- PEGAR MÍDIA LOCAL --------------------
   useEffect(() => {
     navigator.mediaDevices
-  .getUserMedia({ audio: true }) // só áudio
-  .then((stream) => {
-    localStreamRef.current = stream;
-    // se não tiver vídeo, não precisa setar srcObject
-  })
-  .catch((err) => console.warn("Falha ao acessar microfone:", err));
-
+      .getUserMedia({ video: true, audio: true })
+      .then((stream) => {
+        localStreamRef.current = stream;
+        if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+      })
+      .catch((err) => console.warn("Falha ao acessar câmera/microfone:", err));
   }, []);
 
   // -------------------- CONFIGURAÇÃO DO SOCKET --------------------
@@ -125,7 +124,6 @@ const SOCKET_SERVER = process.env.REACT_APP_SOCKET_SERVER || "http://localhost:5
   };
 
   // -------------------- CRIAR PEER --------------------
-  /*
   function createPeer(peerId, initiator = true) {
     const peer = new SimplePeer({
       initiator,
@@ -166,33 +164,6 @@ const SOCKET_SERVER = process.env.REACT_APP_SOCKET_SERVER || "http://localhost:5
     peersRef.current[peerId] = peer;
     return peer;
   }
-    */
-
-function createPeer(peerId, initiator = true) {
-  const peer = new SimplePeer({
-    initiator,
-    trickle: true,
-    stream: localStreamRef.current, // só áudio
-  });
-
-  peer.on("signal", (data) => {
-    socketRef.current.emit("signal", { to: peerId, data });
-  });
-
-  // opcional: log para debug
-  peer.on("stream", (remoteStream) => {
-    console.log("Recebendo áudio de", peerId, remoteStream);
-  });
-
-  peer.on("close", () => {
-    peer.destroy();
-    delete peersRef.current[peerId];
-  });
-
-  peersRef.current[peerId] = peer;
-  return peer;
-}
-
 
   // -------------------- MOVIMENTAÇÃO --------------------
   function onMapClick(e) {

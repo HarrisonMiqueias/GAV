@@ -12,7 +12,7 @@ export default function CreateUser() {
     if (!name) return alert("Digite seu nome");
 
     try {
-      const res = await api.post("/api/users", { name }); // não precisa repetir URL inteira
+      //const res = await api.post("/api/users", { name }); // não precisa repetir URL inteira
       console.log("Usuário criado:", res.data);
       navigate("/gather", { state: { name: res.data.name } });
     } catch (err) {

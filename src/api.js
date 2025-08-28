@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // api.js
-const API_BASE_URL = process.env.REACT_APP_API_URL || "https://api-gav.onrender.com";
+const API_BASE_URL = process.env.REACT_APP_API_URL;
 
 
 const api = axios.create({

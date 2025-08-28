@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // api.js
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+const API_BASE_URL = process.env.REACT_APP_API_URL || "apigav.vercel.app";
 
 
 const api = axios.create({

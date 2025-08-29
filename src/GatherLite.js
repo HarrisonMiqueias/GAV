@@ -211,11 +211,11 @@ function toggleAudio() {
   }
 
   function handleKey(e) {
-    const step = 5;
+    const step = 50;
     if (e.key === "ArrowUp") setMe((m) => ({ ...m, y: Math.max(0, m.y - step) }));
     if (e.key === "ArrowDown") setMe((m) => ({ ...m, y: Math.min(500, m.y + step) }));
     if (e.key === "ArrowLeft") setMe((m) => ({ ...m, x: Math.max(0, m.x - step) }));
-    if (e.key === "ArrowRight") setMe((m) => ({ ...m, x: Math.min(1000, m.x + step) }));
+    if (e.key === "ArrowRight") setMe((m) => ({ ...m, x: Math.min(1100, m.x + step) }));
   }
 
   useEffect(() => {

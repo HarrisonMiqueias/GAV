@@ -211,7 +211,7 @@ function toggleAudio() {
   }
 
   function handleKey(e) {
-    const step = 20;
+    const step = 5;
     if (e.key === "ArrowUp") setMe((m) => ({ ...m, y: Math.max(0, m.y - step) }));
     if (e.key === "ArrowDown") setMe((m) => ({ ...m, y: Math.min(500, m.y + step) }));
     if (e.key === "ArrowLeft") setMe((m) => ({ ...m, x: Math.max(0, m.x - step) }));
@@ -227,11 +227,15 @@ function toggleAudio() {
   return (
     <div className="">
       <div className="relative" style={{ 
-            width: 1000, 
+            width: 1100, 
             height: 500, 
             padding: 10,
             marginLeft: 200,
-            marginTop: 10
+            marginTop: 10,
+            border: "1px solid #000", 
+            borderRadius: 5, 
+            background: "#f0f0f0",
+            margin:10
             }}>
         <div
           ref={mapRef}
@@ -242,8 +246,9 @@ function toggleAudio() {
             backgroundSize: "cover",
             borderRadius: 5,
             overflow: "hidden",
-            width: 1000,
+            width: 1100,
             height: 500,
+            marginBottom:10
           }}
         >
         {Object.entries(users).map(([id, u]) => (
@@ -311,11 +316,11 @@ function toggleAudio() {
         {/* Vídeos remotos */}
         <div
           id="remote-videos"
-          style={{ position: "absolute", right: 0, top: 20, width: 170 }}
+          style={{ position: "absolute", right: 0, top: 280, width: 210 }}
         />
 
         {/* Vídeo local */}
-        <div style={{ position: "absolute", left: 10, top: 10, bottom:0, width: 200, paddingTop:15 }}>
+        <div style={{ position: "absolute", right: 10, top: 10, bottom:0, width: 200, paddingTop:15 }}>
           <div style={{ 
             fontSize: 15,
             marginLeft:10, 
@@ -338,16 +343,16 @@ function toggleAudio() {
             playsInline
             style={{ width: 195, marginTop:10, height: 145, borderRadius: 10 ,border: "1px solid rgba(24, 2, 2, 0.41)",}}
           />
+          <div style={{ marginTop: 10, display: "flex", gap: 10 }}>
+              <button onClick={toggleVideo} style={{ padding: "6px 12px" }}>
+                {videoEnabled ? "Desligar Câmera" : "Ligar Câmera"}
+              </button>
+              <button onClick={toggleAudio} style={{ padding: "6px 12px" }}>
+                {audioEnabled ? "Mutar" : "Desmutar"}
+              </button>
+            </div>
         </div>
-            <div style={{ marginTop: 10, display: "flex", gap: 10 }}>
-          <button onClick={toggleVideo} style={{ padding: "6px 12px" }}>
-            {videoEnabled ? "Desligar Câmera" : "Ligar Câmera"}
-          </button>
-          <button onClick={toggleAudio} style={{ padding: "6px 12px" }}>
-            {audioEnabled ? "Mutar" : "Desmutar"}
-          </button>
-        </div>
-
+            
       </div>
     </div>
   );

@@ -10,7 +10,7 @@ export default function GatherLite() {
   // GatherLite.js
 const SOCKET_SERVER = process.env.REACT_APP_SOCKET_SERVER || "http://localhost:5000";
 
-  const USER_RADIUS = 120;
+  const USER_RADIUS = 60;
   const location = useLocation();
   const userName = location.state?.name || "Você";
   const [me, setMe] = useState({ id: null, x: 700, y: 300, name: userName });
@@ -210,42 +210,63 @@ const SOCKET_SERVER = process.env.REACT_APP_SOCKET_SERVER || "http://localhost:5
             height: 500,
           }}
         >
-          {/* Usuários */}
         {Object.entries(users).map(([id, u]) => (
-          <div
-            key={id}
-            style={{
-              position: "absolute",
-              left: u.x - 16,
-              top: u.y - 16,
-              width: 32,
-              height: 32,
-              borderRadius: "50%",
-              background: id === me.id ? "#4ade80" : "#60a5fa",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#fff",
-              fontSize: 12,
-              userSelect: "none",
-              boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
-            }}
-          >
-            {u.name ? u.name.charAt(0).toUpperCase() : "?"}
-          </div>
-          ))}
+  <React.Fragment key={id}>
+    
+     {/* Nome abaixo do círculo */}
+    <div
+      style={{
+        position: "absolute",
+        left: u.x - (u.name?.length * 3), // centralizar o nome em relação ao círculo
+        top: u.y + 20, // um pouco abaixo do círculo
+        fontSize: 12,
+        color: "#222",
+        background: "rgba(255,255,255,0.8)",
+        padding: "2px 6px",
+        borderRadius: 4,
+        whiteSpace: "nowrap",
+      }}
+    >
+      {u.name}
+    </div>
+    {/* Círculo */}
+    <div
+      style={{
+        position: "absolute",
+        left: u.x - 11,
+        top: u.y + 45,
+        width: 32,
+        height: 32,
+        borderRadius: "50%",
+        background: id === me.id ? "#4ade80" : "#60a5fa",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#fff",
+        fontSize: 12,
+        userSelect: "none",
+        boxShadow: "0 4px 10px rgba(0, 0, 0, 0.57)",
+      }}
+    >
+      {u.name ? u.name.charAt(0).toUpperCase() : "?"}
+    </div>
+
+   
+  </React.Fragment>
+))}
+
 
 
           {/* Indicador de raio */}
           <div
             style={{
               position: "absolute",
-              left: me.x - USER_RADIUS,
-              top: me.y - USER_RADIUS,
+              left: (me.x+2) - USER_RADIUS,
+              top: (me.y +60) - USER_RADIUS,
               width: USER_RADIUS * 2,
               height: USER_RADIUS * 2,
               borderRadius: "50%",
-              border: "1px dashed rgba(24, 2, 2, 0.84)",
+              border: "1px dashed rgba(24, 2, 2, 0.15)",
               pointerEvents: "none",
             }}
           />
@@ -258,14 +279,28 @@ const SOCKET_SERVER = process.env.REACT_APP_SOCKET_SERVER || "http://localhost:5
         />
 
         {/* Vídeo local */}
-        <div style={{ position: "absolute", left: 10, top: 10, bottom: 0, width: 200 }}>
-          <div style={{ fontSize: 12,marginLeft:10, color: "#1a0404ff" }}>Sua câmera</div>
+        <div style={{ position: "absolute", left: 10, top: 10, bottom:0, width: 200, paddingTop:15 }}>
+          <div style={{ 
+            fontSize: 15,
+            marginLeft:10, 
+            color: "#1a0404ff",
+            background: "rgba(45, 240, 65, 0.61)",
+            padding: "2px 6px",
+            borderRadius: 4,
+            whiteSpace: "nowrap",
+            width:85,
+            bottom:5,
+            fontStyle:"italic",
+            fontWeight:"bolder"
+          }}>Sua Camera 
+          </div>
+          
           <video
             ref={localVideoRef}
             muted
             autoPlay
             playsInline
-            style={{ width: 200, height: 140, borderRadius: 8 }}
+            style={{ width: 195, marginTop:10, height: 145, borderRadius: 10 ,border: "1px solid rgba(24, 2, 2, 0.41)",}}
           />
         </div>
       </div>

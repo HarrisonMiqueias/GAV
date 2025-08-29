@@ -1,79 +1,149 @@
 import { useLocation } from "react-router-dom";
 import React, { useState, useEffect, useRef } from "react";
-import io from "socket.io-client"; 
+import io from "socket.io-client";
 import SimplePeer from "simple-peer";
 import process from "process";
 window.process = process;
 
-// Servidor de sinalização
 export default function GatherLite() {
-  // GatherLite.js
-const SOCKET_SERVER = process.env.REACT_APP_SOCKET_SERVER || "http://localhost:5000";
+  const SOCKET_SERVER =
+    process.env.REACT_APP_SOCKET_SERVER || "http://localhost:5000";
 
   const USER_RADIUS = 60;
   const location = useLocation();
   const userName = location.state?.name || "Você";
-  const [me, setMe] = useState({ id: null, x: 700, y: 300, name: userName });
+
+  const [me, setMe] = useState({
+    id: null,
+    x: 700,
+    y: 300,
+    name: userName,
+  });
   const [users, setUsers] = useState({});
+  const [videoEnabled, setVideoEnabled] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(false);
 
-  const [videoEnabled, setVideoEnabled] = useState(true);
-  const [audioEnabled, setAudioEnabled] = useState(true);
-
-
-  // Referências
-  const socketRef = useRef(null); // socket
-  const peersRef = useRef({}); // mapa de peers ativos {peerId: SimplePeer}
-  const remoteVideosRef = useRef({}); // referência dos vídeos remotos
-  const localVideoRef = useRef(null); // vídeo local
-  const localStreamRef = useRef(null); // stream local
-  const mapRef = useRef(null); // referência do mapa
+  const socketRef = useRef(null);
+  const peersRef = useRef({});
+  const remoteVideosRef = useRef({});
+  const localVideoRef = useRef(null);
+  const localStreamRef = useRef(null);
+  const mapRef = useRef(null);
 
   // -------------------- PEGAR MÍDIA LOCAL --------------------
- useEffect(() => {
-  async function initMedia() {
-    let stream;
-    try {
-      // tenta pegar vídeo e áudio
-      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    } catch (err) {
-      console.warn("Sem câmera, usando apenas áudio:", err);
+  useEffect(() => {
+    async function initMedia() {
+      let stream;
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
-      } catch (err2) {
-        console.error("Não foi possível acessar microfone:", err2);
-        return;
+        stream = await navigator.mediaDevices.getUserMedia({
+          video:false,
+          audio: true,
+        });
+        setVideoEnabled(false);
+        setAudioEnabled(true);
+      } catch (err) {
+        console.warn("Sem câmera, tentando só áudio:", err);
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: false,
+            audio: true,
+          });
+          setVideoEnabled(false);
+          setAudioEnabled(true);
+        } catch (err2) {
+          console.error("Não foi possível acessar microfone:", err2);
+          return;
+        }
+      }
+      localStreamRef.current = stream;
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = stream;
       }
     }
-    localStreamRef.current = stream;
-    if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+
+    initMedia();
+
+    return () => {
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach((t) => t.stop());
+      }
+    };
+  }, []);
+
+
+ // 🔴 Desliga vídeo
+  function disableVideo() {
+    if (!localStreamRef.current) return;
+
+    const videoTrack = localStreamRef.current.getTracks().find(t => t.kind === "video");
+    if (videoTrack) {
+      videoTrack.stop(); 
+      localStreamRef.current.removeTrack(videoTrack);
+      setVideoEnabled(false);
+
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = new MediaStream(
+          localStreamRef.current.getTracks()
+        );
+      }
+
+      Object.values(peersRef.current).forEach(peer => {
+        const sender = peer._pc.getSenders().find(s => s.track?.kind === "video");
+        if (sender) peer._pc.removeTrack(sender);
+      });
+    }
   }
 
-  initMedia();
-}, []);
+  // 🟢 Liga vídeo novamente
+  async function enableVideo() {
+    if (!localStreamRef.current) return;
 
+    try {
+      const newStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const videoTrack = newStream.getVideoTracks()[0];
+      if (videoTrack) {
+        localStreamRef.current.addTrack(videoTrack);
+        setVideoEnabled(true);
 
-function toggleVideo() {
-  if (localStreamRef.current) {
-    localStreamRef.current.getVideoTracks().forEach(track => {
-      track.enabled = !track.enabled;
-      setVideoEnabled(track.enabled);
-    });
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = localStreamRef.current;
+        }
+
+        Object.values(peersRef.current).forEach(peer => {
+          const sender = peer._pc.getSenders().find(s => s.track?.kind === "video");
+          if (sender) {
+            sender.replaceTrack(videoTrack);
+          } else {
+            peer._pc.addTrack(videoTrack, localStreamRef.current);
+          }
+        });
+      }
+    } catch (err) {
+      console.error("Erro ao reativar vídeo:", err);
+    }
   }
-}
 
-function toggleAudio() {
-  if (localStreamRef.current) {
-    localStreamRef.current.getAudioTracks().forEach(track => {
-      track.enabled = !track.enabled;
-      setAudioEnabled(track.enabled);
-      socketRef.current.emit("update-audio", { audioEnabled: track.enabled });
-    });
+
+
+
+
+  // -------------------- TOGGLES --------------------
+  
+  function toggleAudio() {
+    if (!localStreamRef.current) return;
+
+    const audioTrack = localStreamRef.current.getAudioTracks()[0];
+    if (audioTrack) {
+      audioTrack.enabled = !audioTrack.enabled;
+      setAudioEnabled(audioTrack.enabled);
+
+      socketRef.current.emit("update-audio", {
+        audioEnabled: audioTrack.enabled,
+      });
+    }
   }
-}
 
-
-
-  // -------------------- CONFIGURAÇÃO DO SOCKET --------------------
+  // -------------------- SOCKET --------------------
   useEffect(() => {
     socketRef.current = io(SOCKET_SERVER, { transports: ["websocket"] });
 
@@ -81,16 +151,17 @@ function toggleAudio() {
       const myId = socketRef.current.id;
       setMe((prev) => {
         const newMe = { ...prev, id: myId };
-        // Emitir join somente após ter o id
-        socketRef.current.emit("join", { x: newMe.x, y: newMe.y, name: newMe.name });
+        socketRef.current.emit("join", {
+          x: newMe.x,
+          y: newMe.y,
+          name: newMe.name,
+        });
         return newMe;
       });
     });
 
-    // Recebe estado de todos os usuários
     socketRef.current.on("state", (serverUsers) => setUsers(serverUsers));
 
-    // Usuário desconectou
     socketRef.current.on("user-left", (id) => {
       setUsers((u) => {
         const clone = { ...u };
@@ -113,7 +184,10 @@ function toggleAudio() {
         peer.signal(data);
       } else {
         try {
-          if (data.type === "answer" && peersRef.current[from].remoteDescription) {
+          if (
+            data.type === "answer" &&
+            peersRef.current[from].remoteDescription
+          ) {
             console.log("Ignorando answer duplicada de", from);
             return;
           }
@@ -124,7 +198,6 @@ function toggleAudio() {
       }
     });
 
-
     return () => {
       socketRef.current.disconnect();
       if (localStreamRef.current)
@@ -132,7 +205,7 @@ function toggleAudio() {
     };
   }, []);
 
-  // -------------------- BROADCAST DE POSIÇÃO --------------------
+  // -------------------- MOVIMENTAÇÃO + PROXIMIDADE --------------------
   useEffect(() => {
     const interval = setInterval(() => {
       if (socketRef.current?.connected) {
@@ -143,7 +216,6 @@ function toggleAudio() {
     return () => clearInterval(interval);
   }, [me, users]);
 
-  // -------------------- CHECAGEM DE PROXIMIDADE --------------------
   const checkProximityAndConnect = () => {
     if (!me.id) return;
     Object.entries(users).forEach(([id, u]) => {
@@ -203,7 +275,7 @@ function toggleAudio() {
     return peer;
   }
 
-  // -------------------- MOVIMENTAÇÃO --------------------
+  // -------------------- MAPA --------------------
   function onMapClick(e) {
     const rect = mapRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -427,22 +499,58 @@ function toggleAudio() {
           }}>Sua Câmera 
           </div>
           
-          <video
+            <video
             ref={localVideoRef}
             muted
             autoPlay
             playsInline
-            style={{ width: 195, marginTop:10, height: 145, borderRadius: 10}}
-          />
+            style={{ 
+              width: 195, 
+              marginTop:10, 
+              height: 145, 
+              borderRadius: 10,
+              background: "#0000006b"
+            }}
+            />
+           
+            
+         
           <div style={{ marginTop: 10, display: "flex", gap: 10 }}>
-              <button onClick={toggleVideo} style={{ padding: "6px 12px" }}>
-                {videoEnabled ? "Desligar Câmera" : "Ligar Câmera"}
-              </button>
-              <button onClick={toggleAudio} style={{ padding: "6px 12px" }}>
+              <div>
+             {videoEnabled ? (
+                <button onClick={disableVideo} style={{
+                  padding: "6px 12px",
+                  backgroundColor: "#ef4444",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 4,
+                  cursor: "pointer",
+
+                }}>Desligar câmera</button>
+              ) : (
+                <button onClick={enableVideo} style={{
+                  padding: "6px 12px",
+                  backgroundColor: "#22c55e",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 4,
+                  cursor: "pointer"
+                }}>Ligar câmera</button>
+              )}
+            </div>
+            <div>
+              <button onClick={toggleAudio} style={{ 
+                padding: "6px 12px"
+                ,backgroundColor: audioEnabled ? "#ef4444" : "#22c55e"
+                ,color: "#fff"
+                ,border: "none"
+                ,borderRadius: 4
+                ,cursor: "pointer"
+               }}>
                 {audioEnabled? "Mutar" : "Desmutar"}
               </button>
+              </div>
             </div>
-           
           </div> 
         </div>
             

@@ -333,7 +333,7 @@ function toggleAudio() {
             bottom:5,
             fontStyle:"italic",
             fontWeight:"bolder"
-          }}>Sua Camera 
+          }}>Sua Câmera 
           </div>
           
           <video

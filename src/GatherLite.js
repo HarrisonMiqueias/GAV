@@ -3,7 +3,9 @@ import React, { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 import SimplePeer from "simple-peer";
 import process from "process";
+import Draggable from "react-draggable";
 window.process = process;
+
 
 export default function GatherLite() {
   const SOCKET_SERVER =
@@ -22,6 +24,15 @@ export default function GatherLite() {
   const [users, setUsers] = useState({});
   const [videoEnabled, setVideoEnabled] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(false);
+  const screenVideoRef = useRef(null);
+const [isScreenSharing, setIsScreenSharing] = useState(false);
+const [modalPos, setModalPos] = useState({ x: 100, y: 100 });
+const [dragging, setDragging] = useState(false);
+const dragStart = useRef({ x: 0, y: 0 });
+const [isScreenModalOpen, setIsScreenModalOpen] = useState(false);
+
+
+
 
   const socketRef = useRef(null);
   const peersRef = useRef({});
@@ -69,6 +80,78 @@ export default function GatherLite() {
       }
     };
   }, []);
+
+
+
+function onMouseDown(e) {
+  setDragging(true);
+  dragStart.current = { x: e.clientX - modalPos.x, y: e.clientY - modalPos.y };
+}
+
+function onMouseMove(e) {
+  if (!dragging) return;
+  setModalPos({ x: e.clientX - dragStart.current.x, y: e.clientY - dragStart.current.y });
+}
+
+function onMouseUp() {
+  setDragging(false);
+}
+
+useEffect(() => {
+  window.addEventListener("mousemove", onMouseMove);
+  window.addEventListener("mouseup", onMouseUp);
+  return () => {
+    window.removeEventListener("mousemove", onMouseMove);
+    window.removeEventListener("mouseup", onMouseUp);
+  };
+}, [dragging]);
+
+
+async function startScreenShare() {
+  try {
+    const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+
+    if (screenVideoRef.current) {
+      screenVideoRef.current.srcObject = screenStream;
+      await screenVideoRef.current.play(); // garante que o vídeo comece
+    }
+
+    setIsScreenModalOpen(true);
+    setIsScreenSharing(true); // ADICIONE ISSO
+
+    const screenTrack = screenStream.getVideoTracks()[0];
+    Object.values(peersRef.current).forEach(peer => {
+      const sender = peer._pc.getSenders().find(s => s.track?.kind === "video");
+      if (sender) sender.replaceTrack(screenTrack);
+    });
+
+    screenTrack.onended = () => stopScreenShare();
+  } catch (err) {
+    console.error("Erro ao compartilhar tela:", err);
+  }
+}
+
+
+
+
+function stopScreenShare() {
+  setIsScreenModalOpen(false);
+  setIsScreenSharing(false); // ADICIONE ISSO
+
+  navigator.mediaDevices.getUserMedia({ video: false, audio: true })
+    .then((newStream) => {
+      localStreamRef.current = newStream;
+      localVideoRef.current.srcObject = newStream;
+      localVideoRef.current.play();
+
+      const videoTrack = newStream.getVideoTracks()[0];
+      Object.values(peersRef.current).forEach(peer => {
+        const sender = peer._pc.getSenders().find(s => s.track?.kind === "video");
+        if (sender) sender.replaceTrack(videoTrack);
+      });
+    });
+}
+
 
 
  // 🔴 Desliga vídeo
@@ -497,8 +580,7 @@ export default function GatherLite() {
             fontStyle:"italic",
             fontWeight:"bolder"
           }}>Sua Câmera 
-          </div>
-          
+          </div>          
             <video
             ref={localVideoRef}
             muted
@@ -520,41 +602,98 @@ export default function GatherLite() {
              {videoEnabled ? (
                 <button onClick={disableVideo} style={{
                   padding: "6px 12px",
-                  backgroundColor: "#ef4444",
+                   backgroundColor: "#22c55e",
                   color: "#fff",
                   border: "none",
                   borderRadius: 4,
                   cursor: "pointer",
 
-                }}>Desligar câmera</button>
+                }}>Câmera</button>
               ) : (
                 <button onClick={enableVideo} style={{
                   padding: "6px 12px",
-                  backgroundColor: "#22c55e",
+                  backgroundColor: "#ef4444",
                   color: "#fff",
                   border: "none",
                   borderRadius: 4,
                   cursor: "pointer"
-                }}>Ligar câmera</button>
+                }}>Câmera</button>
               )}
             </div>
             <div>
               <button onClick={toggleAudio} style={{ 
                 padding: "6px 12px"
-                ,backgroundColor: audioEnabled ? "#ef4444" : "#22c55e"
+                ,backgroundColor: audioEnabled ? "#22c55e":"#ef4444"
                 ,color: "#fff"
                 ,border: "none"
                 ,borderRadius: 4
                 ,cursor: "pointer"
                }}>
-                {audioEnabled? "Mutar" : "Desmutar"}
+                {audioEnabled? "Audio" : "Audio"}
               </button>
+              </div>
+              <div>
+                <button onClick={startScreenShare} style={{
+                  padding: "6px 12px",
+                  backgroundColor: "#3b82f6",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 4,
+                  cursor: "pointer"
+                }}>
+                  Tela
+                </button>
               </div>
             </div>
           </div> 
         </div>
-            
+        {isScreenModalOpen && (
+          <div style={{
+            position: "fixed",
+            top: 50,
+            left: 50,
+            width: "80%",
+            height: "80%",
+            background: "#fff",
+            border: "2px solid #3b82f6",
+            borderRadius: 10,
+            zIndex: 9999,
+            boxShadow: "0 6px 20px rgba(0,0,0,0.5)",
+            display: "flex",
+            flexDirection: "column"
+          }}>
+            <div style={{
+              padding: "8px 12px",
+              background: "#3b82f6",
+              color: "#fff",
+              fontWeight: "bold",
+              borderTopLeftRadius: 10,
+              borderTopRightRadius: 10,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center"
+            }}>
+              Compartilhando Tela
+              <button onClick={stopScreenShare} style={{
+                background: "red",
+                border: "none",
+                color: "#fff",
+                borderRadius: 4,
+                padding: "2px 8px",
+                cursor: "pointer"
+              }}>X</button>
+            </div>
+            <video
+              ref={screenVideoRef}
+              autoPlay
+              playsInline
+              style={{ width: "100%", height: "100%", background: "#000", borderRadius: 8 }}
+            />
+          </div>
+        )}
+
       </div>
     </div>
+    
   );
 }

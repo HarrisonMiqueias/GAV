@@ -27,7 +27,7 @@ const SOCKET_SERVER = process.env.REACT_APP_SOCKET_SERVER || "http://localhost:5
   // -------------------- PEGAR MÍDIA LOCAL --------------------
   useEffect(() => {
     navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
+      .getUserMedia({ video: false, audio: true })
       .then((stream) => {
         localStreamRef.current = stream;
         if (localVideoRef.current) localVideoRef.current.srcObject = stream;

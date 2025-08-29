@@ -211,7 +211,7 @@ function toggleAudio() {
   }
 
   function handleKey(e) {
-    const step = 10;
+    const step = 20;
     if (e.key === "ArrowUp") setMe((m) => ({ ...m, y: Math.max(0, m.y - step) }));
     if (e.key === "ArrowDown") setMe((m) => ({ ...m, y: Math.min(500, m.y + step) }));
     if (e.key === "ArrowLeft") setMe((m) => ({ ...m, x: Math.max(0, m.x - step) }));

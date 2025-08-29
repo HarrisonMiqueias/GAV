@@ -29,15 +29,28 @@ const [audioEnabled, setAudioEnabled] = useState(true);
   const mapRef = useRef(null); // referência do mapa
 
   // -------------------- PEGAR MÍDIA LOCAL --------------------
-  useEffect(() => {
-    navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
-      .then((stream) => {
-        localStreamRef.current = stream;
-        if (localVideoRef.current) localVideoRef.current.srcObject = stream;
-      })
-      .catch((err) => console.warn("Falha ao acessar câmera/microfone:", err));
-  }, []);
+ useEffect(() => {
+  async function initMedia() {
+    let stream;
+    try {
+      // tenta pegar vídeo e áudio
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    } catch (err) {
+      console.warn("Sem câmera, usando apenas áudio:", err);
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+      } catch (err2) {
+        console.error("Não foi possível acessar microfone:", err2);
+        return;
+      }
+    }
+    localStreamRef.current = stream;
+    if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+  }
+
+  initMedia();
+}, []);
+
 
 function toggleVideo() {
   if (localStreamRef.current) {

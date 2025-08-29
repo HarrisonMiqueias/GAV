@@ -281,7 +281,7 @@ function toggleAudio() {
         color: "#fff",
         fontSize: 12,
         userSelect: "none",
-        boxShadow: "0 4px 10px rgba(0, 0, 0, 0.57)",
+        boxShadow: "0 4px 10px rgba(0, 0, 0, 0.78)",
       }}
     >
       {u.name ? u.name.charAt(0).toUpperCase() : "?"}

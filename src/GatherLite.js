@@ -17,7 +17,7 @@ const SOCKET_SERVER = process.env.REACT_APP_SOCKET_SERVER || "http://localhost:5
   const [users, setUsers] = useState({});
 
   const [videoEnabled, setVideoEnabled] = useState(true);
-const [audioEnabled, setAudioEnabled] = useState(true);
+  const [audioEnabled, setAudioEnabled] = useState(true);
 
 
   // Referências
@@ -215,7 +215,7 @@ function toggleAudio() {
   function handleKey(e) {
     const step = 50;
     if (e.key === "ArrowUp") setMe((m) => ({ ...m, y: Math.max(0, m.y - step) }));
-    if (e.key === "ArrowDown") setMe((m) => ({ ...m, y: Math.min(500, m.y + step) }));
+    if (e.key === "ArrowDown") setMe((m) => ({ ...m, y: Math.min(600, m.y + step) }));
     if (e.key === "ArrowLeft") setMe((m) => ({ ...m, x: Math.max(0, m.x - step) }));
     if (e.key === "ArrowRight") setMe((m) => ({ ...m, x: Math.min(1100, m.x + step) }));
   }
@@ -227,16 +227,36 @@ function toggleAudio() {
 
   // -------------------- RENDER --------------------
   return (
-    <div className="">
+    <div className="" style={{ background: "#2de7fbff", height: "100vh", overflow: "hidden" }}>
+      <div style={{
+            width: 1100, 
+            height: 50, 
+            padding: 10,
+            marginLeft: 200,
+            marginTop: 20,
+            border: "1px solid #0000006b", 
+            borderRadius: 5, 
+            background: "#f8f1f1da",
+            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.78)",
+            margin:10,
+            fontSize: 20,
+            color: "#1a0404ff",
+            textAlign:"center",
+            fontWeight:"bolder",
+            fontStyle:"italic",
+      }}>
+        SiCAV - Sistema de Comunicação Audiovisuais em Vídeo
+      </div>
       <div className="relative" style={{ 
             width: 1100, 
-            height: 500, 
+            height: 600, 
             padding: 10,
             marginLeft: 200,
             marginTop: 10,
-            border: "1px solid #000", 
+            border: "1px solid #0000006b", 
             borderRadius: 5, 
-            background: "#f0f0f0",
+            background: "#f8f1f1da",
+            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.78)",
             margin:10
             }}>
         <div
@@ -249,7 +269,7 @@ function toggleAudio() {
             borderRadius: 5,
             overflow: "hidden",
             width: 1100,
-            height: 500,
+            height: 600,
             marginBottom:10
           }}
         >
@@ -294,7 +314,7 @@ function toggleAudio() {
   {u.name ? u.name.charAt(0).toUpperCase() : "?"}
 
   {/* Ícone de mute */}
-  {!u.audioEnabled ? (
+  {u.audioEnabled === false ? (
     <span
       style={{
         position: "absolute",
@@ -337,12 +357,60 @@ function toggleAudio() {
         </div>
 
         {/* Vídeos remotos */}
+        <div style={{ 
+          position: "absolute",
+          right: 20,
+          top: 290,
+          width: 200,
+          height: 350, 
+          padding: 10,
+          marginLeft: 200,
+          border: "1px solid #0000006b", 
+          borderRadius: 5, 
+          background: "#f8f1f1da",
+          boxShadow: "0 4px 10px rgba(0, 0, 0, 0.78)",
+          margin:10,
+          fontSize: 20,
+          color: "#1a0404ff",
+          textAlign:"center",
+          fontWeight:"bolder",
+          fontStyle:"italic",
+          }}>
+            <div style={{ 
+              fontSize: 15,
+              marginLeft:10,
+              marginBottom:5,
+              color: "#1a0404ff",
+              background: "rgba(45, 240, 65, 0.61)",
+              borderRadius: 4,}}>
+            Usuários Próximos
+            </div>
         <div
           id="remote-videos"
-          style={{ position: "absolute", right: 0, top: 280, width: 210 }}
+          style={{ position: "absolute", right: 0, top:0, width: 200}}
         />
+        </div>
 
         {/* Vídeo local */}
+        <div style={{ 
+          position: "absolute",
+          right: 20,
+          top: 10,
+            width: 200, 
+            height: 250, 
+            padding: 10,
+            marginLeft: 200,
+            border: "1px solid #0000006b", 
+            borderRadius: 5, 
+            background: "#f8f1f1da",
+            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.78)",
+            margin:10,
+            fontSize: 20,
+            color: "#1a0404ff",
+            textAlign:"center",
+            fontWeight:"bolder",
+            fontStyle:"italic",
+        }}>
         <div style={{ position: "absolute", right: 10, top: 10, bottom:0, width: 200, paddingTop:15 }}>
           <div style={{ 
             fontSize: 15,
@@ -364,16 +432,18 @@ function toggleAudio() {
             muted
             autoPlay
             playsInline
-            style={{ width: 195, marginTop:10, height: 145, borderRadius: 10 ,border: "1px solid rgba(24, 2, 2, 0.41)",}}
+            style={{ width: 195, marginTop:10, height: 145, borderRadius: 10}}
           />
           <div style={{ marginTop: 10, display: "flex", gap: 10 }}>
               <button onClick={toggleVideo} style={{ padding: "6px 12px" }}>
                 {videoEnabled ? "Desligar Câmera" : "Ligar Câmera"}
               </button>
               <button onClick={toggleAudio} style={{ padding: "6px 12px" }}>
-                {audioEnabled ? "Mutar" : "Desmutar"}
+                {audioEnabled? "Mutar" : "Desmutar"}
               </button>
             </div>
+           
+          </div> 
         </div>
             
       </div>

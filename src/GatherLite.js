@@ -655,7 +655,6 @@ function stopScreenShare() {
             width: "80%",
             height: "80%",
             background: "#fff",
-            border: "2px solid #3b82f6",
             borderRadius: 10,
             zIndex: 9999,
             boxShadow: "0 6px 20px rgba(0,0,0,0.5)",
@@ -663,8 +662,8 @@ function stopScreenShare() {
             flexDirection: "column"
           }}>
             <div style={{
-              padding: "8px 12px",
-              background: "#3b82f6",
+              padding: "3px 10px",
+              background: "#588adbff",
               color: "#fff",
               fontWeight: "bold",
               borderTopLeftRadius: 10,
@@ -687,7 +686,10 @@ function stopScreenShare() {
               ref={screenVideoRef}
               autoPlay
               playsInline
-              style={{ width: "100%", height: "100%", background: "#000", borderRadius: 8 }}
+              style={{ width: "100%", height: "100%", background: "#000", 
+                borderBottomRightRadius: 10,
+                bordeBottomLeftRadius: 10 
+              }}
             />
           </div>
         )}

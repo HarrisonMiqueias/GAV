@@ -3,43 +3,32 @@ import React, { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 import SimplePeer from "simple-peer";
 import process from "process";
-import Draggable from "react-draggable";
 window.process = process;
 
 
 export default function GatherLite() {
-  const SOCKET_SERVER =
-    process.env.REACT_APP_SOCKET_SERVER || "http://localhost:5000";
-
+  
+  const SOCKET_SERVER = process.env.REACT_APP_SOCKET_SERVER || "http://localhost:5000";
   const USER_RADIUS = 60;
   const location = useLocation();
-  const userName = location.state?.name || "Você";
-
-  const [me, setMe] = useState({
-    id: null,
-    x: 700,
-    y: 300,
-    name: userName,
-  });
+  const userNam = location.state?.name || "Você";
+  const [me, setMe] = useState({ id: null, x: 700, y: 300, name: userNam});
   const [users, setUsers] = useState({});
   const [videoEnabled, setVideoEnabled] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(false);
   const screenVideoRef = useRef(null);
-const [isScreenSharing, setIsScreenSharing] = useState(false);
-const [modalPos, setModalPos] = useState({ x: 100, y: 100 });
-const [dragging, setDragging] = useState(false);
-const dragStart = useRef({ x: 0, y: 0 });
-const [isScreenModalOpen, setIsScreenModalOpen] = useState(false);
-
-
-
-
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [modalPos, setModalPos] = useState({ x: 100, y: 100 });
+  const [dragging, setDragging] = useState(false);
+  const dragStart = useRef({ x: 0, y: 0 });
+  const [isScreenModalOpen, setIsScreenModalOpen] = useState(false);
   const socketRef = useRef(null);
   const peersRef = useRef({});
   const remoteVideosRef = useRef({});
   const localVideoRef = useRef(null);
   const localStreamRef = useRef(null);
   const mapRef = useRef(null);
+
 
   // -------------------- PEGAR MÍDIA LOCAL --------------------
   useEffect(() => {
@@ -71,22 +60,13 @@ const [isScreenModalOpen, setIsScreenModalOpen] = useState(false);
         localVideoRef.current.srcObject = stream;
       }
     }
-
     initMedia();
-
     return () => {
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach((t) => t.stop());
       }
     };
   }, []);
-
-
-
-function onMouseDown(e) {
-  setDragging(true);
-  dragStart.current = { x: e.clientX - modalPos.x, y: e.clientY - modalPos.y };
-}
 
 function onMouseMove(e) {
   if (!dragging) return;
@@ -110,40 +90,31 @@ useEffect(() => {
 async function startScreenShare() {
   try {
     const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-
     if (screenVideoRef.current) {
       screenVideoRef.current.srcObject = screenStream;
       await screenVideoRef.current.play(); // garante que o vídeo comece
     }
-
     setIsScreenModalOpen(true);
     setIsScreenSharing(true); // ADICIONE ISSO
-
     const screenTrack = screenStream.getVideoTracks()[0];
     Object.values(peersRef.current).forEach(peer => {
       const sender = peer._pc.getSenders().find(s => s.track?.kind === "video");
       if (sender) sender.replaceTrack(screenTrack);
     });
-
     screenTrack.onended = () => stopScreenShare();
   } catch (err) {
     console.error("Erro ao compartilhar tela:", err);
   }
 }
 
-
-
-
 function stopScreenShare() {
   setIsScreenModalOpen(false);
   setIsScreenSharing(false); // ADICIONE ISSO
-
   navigator.mediaDevices.getUserMedia({ video: false, audio: true })
     .then((newStream) => {
       localStreamRef.current = newStream;
       localVideoRef.current.srcObject = newStream;
       localVideoRef.current.play();
-
       const videoTrack = newStream.getVideoTracks()[0];
       Object.values(peersRef.current).forEach(peer => {
         const sender = peer._pc.getSenders().find(s => s.track?.kind === "video");
@@ -152,24 +123,19 @@ function stopScreenShare() {
     });
 }
 
-
-
- // 🔴 Desliga vídeo
+  // 🔴 Desliga vídeo
   function disableVideo() {
     if (!localStreamRef.current) return;
-
     const videoTrack = localStreamRef.current.getTracks().find(t => t.kind === "video");
     if (videoTrack) {
       videoTrack.stop(); 
       localStreamRef.current.removeTrack(videoTrack);
       setVideoEnabled(false);
-
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = new MediaStream(
           localStreamRef.current.getTracks()
         );
       }
-
       Object.values(peersRef.current).forEach(peer => {
         const sender = peer._pc.getSenders().find(s => s.track?.kind === "video");
         if (sender) peer._pc.removeTrack(sender);
@@ -180,18 +146,15 @@ function stopScreenShare() {
   // 🟢 Liga vídeo novamente
   async function enableVideo() {
     if (!localStreamRef.current) return;
-
     try {
       const newStream = await navigator.mediaDevices.getUserMedia({ video: true });
       const videoTrack = newStream.getVideoTracks()[0];
       if (videoTrack) {
         localStreamRef.current.addTrack(videoTrack);
         setVideoEnabled(true);
-
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = localStreamRef.current;
         }
-
         Object.values(peersRef.current).forEach(peer => {
           const sender = peer._pc.getSenders().find(s => s.track?.kind === "video");
           if (sender) {
@@ -206,12 +169,7 @@ function stopScreenShare() {
     }
   }
 
-
-
-
-
   // -------------------- TOGGLES --------------------
-  
   function toggleAudio() {
     if (!localStreamRef.current) return;
 
@@ -229,7 +187,6 @@ function stopScreenShare() {
   // -------------------- SOCKET --------------------
   useEffect(() => {
     socketRef.current = io(SOCKET_SERVER, { transports: ["websocket"] });
-
     socketRef.current.on("connect", () => {
       const myId = socketRef.current.id;
       setMe((prev) => {
@@ -242,9 +199,7 @@ function stopScreenShare() {
         return newMe;
       });
     });
-
     socketRef.current.on("state", (serverUsers) => setUsers(serverUsers));
-
     socketRef.current.on("user-left", (id) => {
       setUsers((u) => {
         const clone = { ...u };
@@ -260,7 +215,6 @@ function stopScreenShare() {
         delete remoteVideosRef.current[id];
       }
     });
-
     socketRef.current.on("signal", ({ from, data }) => {
       if (!peersRef.current[from]) {
         const peer = createPeer(from, false);
@@ -280,7 +234,6 @@ function stopScreenShare() {
         }
       }
     });
-
     return () => {
       socketRef.current.disconnect();
       if (localStreamRef.current)
@@ -288,7 +241,7 @@ function stopScreenShare() {
     };
   }, []);
 
-  // -------------------- MOVIMENTAÇÃO + PROXIMIDADE --------------------
+  // -------------------- MOVIMENTAÇÃO --------------------
   useEffect(() => {
     const interval = setInterval(() => {
       if (socketRef.current?.connected) {
@@ -298,7 +251,8 @@ function stopScreenShare() {
     }, 500);
     return () => clearInterval(interval);
   }, [me, users]);
-
+  
+  // -------------------- PROXIMIDADE ------------------- 
   const checkProximityAndConnect = () => {
     if (!me.id) return;
     Object.entries(users).forEach(([id, u]) => {
@@ -306,7 +260,6 @@ function stopScreenShare() {
       const dx = u.x - me.x;
       const dy = u.y - me.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
-
       if (dist <= USER_RADIUS && !peersRef.current[id]) {
         createPeer(id, true);
       } else if (dist > USER_RADIUS && peersRef.current[id]) {
@@ -323,11 +276,9 @@ function stopScreenShare() {
       trickle: true,
       stream: localStreamRef.current || null,
     });
-
     peer.on("signal", (data) => {
       socketRef.current.emit("signal", { to: peerId, data });
     });
-
     peer.on("stream", (remoteStream) => {
       let el = remoteVideosRef.current[peerId];
       if (!el) {
@@ -344,7 +295,6 @@ function stopScreenShare() {
       }
       el.srcObject = remoteStream;
     });
-
     peer.on("close", () => {
       if (remoteVideosRef.current[peerId]) {
         remoteVideosRef.current[peerId].remove();
@@ -353,7 +303,6 @@ function stopScreenShare() {
       peer.destroy();
       delete peersRef.current[peerId];
     });
-
     peersRef.current[peerId] = peer;
     return peer;
   }

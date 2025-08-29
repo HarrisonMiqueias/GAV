@@ -362,7 +362,7 @@ function toggleAudio() {
           right: 20,
           top: 290,
           width: 200,
-          height: 350, 
+          height: 390, 
           padding: 10,
           marginLeft: 200,
           border: "1px solid #0000006b", 
@@ -387,7 +387,7 @@ function toggleAudio() {
             </div>
         <div
           id="remote-videos"
-          style={{ position: "absolute", right: 0, top:0, width: 200}}
+          style={{ position: "absolute", right: 0, top:50, width: 200}}
         />
         </div>
 

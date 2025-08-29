@@ -16,6 +16,10 @@ const SOCKET_SERVER = process.env.REACT_APP_SOCKET_SERVER || "http://localhost:5
   const [me, setMe] = useState({ id: null, x: 700, y: 300, name: userName });
   const [users, setUsers] = useState({});
 
+  const [videoEnabled, setVideoEnabled] = useState(true);
+const [audioEnabled, setAudioEnabled] = useState(true);
+
+
   // Referências
   const socketRef = useRef(null); // socket
   const peersRef = useRef({}); // mapa de peers ativos {peerId: SimplePeer}
@@ -34,6 +38,25 @@ const SOCKET_SERVER = process.env.REACT_APP_SOCKET_SERVER || "http://localhost:5
       })
       .catch((err) => console.warn("Falha ao acessar câmera/microfone:", err));
   }, []);
+
+function toggleVideo() {
+  if (localStreamRef.current) {
+    localStreamRef.current.getVideoTracks().forEach(track => {
+      track.enabled = !track.enabled;
+      setVideoEnabled(track.enabled);
+    });
+  }
+}
+
+function toggleAudio() {
+  if (localStreamRef.current) {
+    localStreamRef.current.getAudioTracks().forEach(track => {
+      track.enabled = !track.enabled;
+      setAudioEnabled(track.enabled);
+    });
+  }
+}
+
 
   // -------------------- CONFIGURAÇÃO DO SOCKET --------------------
   useEffect(() => {
@@ -303,6 +326,15 @@ const SOCKET_SERVER = process.env.REACT_APP_SOCKET_SERVER || "http://localhost:5
             style={{ width: 195, marginTop:10, height: 145, borderRadius: 10 ,border: "1px solid rgba(24, 2, 2, 0.41)",}}
           />
         </div>
+            <div style={{ marginTop: 10, display: "flex", gap: 10 }}>
+          <button onClick={toggleVideo} style={{ padding: "6px 12px" }}>
+            {videoEnabled ? "Desligar Câmera" : "Ligar Câmera"}
+          </button>
+          <button onClick={toggleAudio} style={{ padding: "6px 12px" }}>
+            {audioEnabled ? "Mutar" : "Desmutar"}
+          </button>
+        </div>
+
       </div>
     </div>
   );

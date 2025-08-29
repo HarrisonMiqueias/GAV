@@ -242,7 +242,7 @@ function toggleAudio() {
           onClick={onMapClick}
           className="absolute inset-0"
           style={{
-            backgroundImage:"url('https://images.unsplash.com/photo-1549880338-65ddcdfd017b')",
+            backgroundImage:"url('https://cdna.artstation.com/p/assets/images/images/054/239/544/large/charlotte-r-map-00-v2-wip4.jpg?1664093958')",
             backgroundSize: "cover",
             borderRadius: 5,
             overflow: "hidden",

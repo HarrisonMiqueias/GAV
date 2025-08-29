@@ -66,9 +66,11 @@ function toggleAudio() {
     localStreamRef.current.getAudioTracks().forEach(track => {
       track.enabled = !track.enabled;
       setAudioEnabled(track.enabled);
+      socketRef.current.emit("update-audio", { audioEnabled: track.enabled });
     });
   }
 }
+
 
 
   // -------------------- CONFIGURAÇÃO DO SOCKET --------------------
@@ -272,25 +274,46 @@ function toggleAudio() {
     </div>
     {/* Círculo */}
     <div
+  style={{
+    position: "absolute",
+    left: u.x - 11,
+    top: u.y + 45,
+    width: 32,
+    height: 32,
+    borderRadius: "50%",
+    background: id === me.id ? "#4ade80" : "#60a5fa",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#fff",
+    fontSize: 12,
+    userSelect: "none",
+    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.78)",
+  }}
+>
+  {u.name ? u.name.charAt(0).toUpperCase() : "?"}
+
+  {/* Ícone de mute */}
+  {!u.audioEnabled ? (
+    <span
       style={{
         position: "absolute",
-        left: u.x - 11,
-        top: u.y + 45,
-        width: 32,
-        height: 32,
+        bottom: -8,
+        right: -8,
+        fontSize: 14,
+        background: "red",
         borderRadius: "50%",
-        background: id === me.id ? "#4ade80" : "#60a5fa",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        color: "#fff",
-        fontSize: 12,
-        userSelect: "none",
-        boxShadow: "0 4px 10px rgba(0, 0, 0, 0.78)",
+        padding: "2px 4px",
       }}
     >
-      {u.name ? u.name.charAt(0).toUpperCase() : "?"}
-    </div>
+      🔇
+    </span>
+  ):(
+    <span></span>
+  )
+}
+</div>
+
 
    
   </React.Fragment>

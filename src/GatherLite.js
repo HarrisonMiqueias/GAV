@@ -302,7 +302,7 @@ function toggleAudio() {
               width: USER_RADIUS * 2,
               height: USER_RADIUS * 2,
               borderRadius: "50%",
-              border: "1px dashed rgba(24, 2, 2, 0.15)",
+              border: "1px dashed rgba(24, 2, 2, 0.64)",
               pointerEvents: "none",
             }}
           />

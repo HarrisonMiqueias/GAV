@@ -3,7 +3,10 @@ import React, { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 import SimplePeer from "simple-peer";
 import process from "process";
+import { CameraVideo, CameraVideoOff, Mic, MicMute, Display } from "react-bootstrap-icons";
 window.process = process;
+
+
 
 
 export default function GatherLite() {
@@ -90,18 +93,34 @@ useEffect(() => {
 async function startScreenShare() {
   try {
     const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+
+    // Mostra para você mesmo
     if (screenVideoRef.current) {
       screenVideoRef.current.srcObject = screenStream;
-      await screenVideoRef.current.play(); // garante que o vídeo comece
+      await screenVideoRef.current.play();
     }
+
     setIsScreenModalOpen(true);
-    setIsScreenSharing(true); // ADICIONE ISSO
+    setIsScreenSharing(true);
+
     const screenTrack = screenStream.getVideoTracks()[0];
+
     Object.values(peersRef.current).forEach(peer => {
-      const sender = peer._pc.getSenders().find(s => s.track?.kind === "video");
-      if (sender) sender.replaceTrack(screenTrack);
+      // procura sender existente de vídeo
+      let sender = peer._pc.getSenders().find(s => s.track?.kind === "video");
+
+      if (sender) {
+        // substitui
+        sender.replaceTrack(screenTrack);
+      } else {
+        // 🔴 se não existe ainda, adiciona a track explicitamente
+        peer._pc.addTrack(screenTrack, screenStream);
+      }
     });
+
+    // quando parar a tela
     screenTrack.onended = () => stopScreenShare();
+
   } catch (err) {
     console.error("Erro ao compartilhar tela:", err);
   }
@@ -109,19 +128,30 @@ async function startScreenShare() {
 
 function stopScreenShare() {
   setIsScreenModalOpen(false);
-  setIsScreenSharing(false); // ADICIONE ISSO
+  setIsScreenSharing(false);
+
+  // volta pro áudio + opcionalmente câmera
   navigator.mediaDevices.getUserMedia({ video: false, audio: true })
     .then((newStream) => {
       localStreamRef.current = newStream;
-      localVideoRef.current.srcObject = newStream;
-      localVideoRef.current.play();
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = newStream;
+        localVideoRef.current.play();
+      }
+
       const videoTrack = newStream.getVideoTracks()[0];
+
       Object.values(peersRef.current).forEach(peer => {
-        const sender = peer._pc.getSenders().find(s => s.track?.kind === "video");
-        if (sender) sender.replaceTrack(videoTrack);
+        let sender = peer._pc.getSenders().find(s => s.track?.kind === "video");
+        if (sender) {
+          sender.replaceTrack(videoTrack);
+        } else if (videoTrack) {
+          peer._pc.addTrack(videoTrack, newStream);
+        }
       });
     });
 }
+
 
   // 🔴 Desliga vídeo
   function disableVideo() {
@@ -270,42 +300,52 @@ function stopScreenShare() {
   };
 
   // -------------------- CRIAR PEER --------------------
-  function createPeer(peerId, initiator = true) {
-    const peer = new SimplePeer({
-      initiator,
-      trickle: true,
-      stream: localStreamRef.current || null,
+function createPeer(peerId, initiator = true) {
+  const peer = new SimplePeer({
+    initiator,
+    trickle: true,
+  });
+
+  // adiciona tracks atuais (áudio/vídeo) manualmente
+  if (localStreamRef.current) {
+    localStreamRef.current.getTracks().forEach(track => {
+      peer.addTrack(track, localStreamRef.current);
     });
-    peer.on("signal", (data) => {
-      socketRef.current.emit("signal", { to: peerId, data });
-    });
-    peer.on("stream", (remoteStream) => {
-      let el = remoteVideosRef.current[peerId];
-      if (!el) {
-        const vid = document.createElement("video");
-        vid.id = `remote-${peerId}`;
-        vid.autoplay = true;
-        vid.playsInline = true;
-        vid.style.width = "160px";
-        vid.style.height = "120px";
-        vid.style.borderRadius = "8px";
-        document.getElementById("remote-videos").appendChild(vid);
-        remoteVideosRef.current[peerId] = vid;
-        el = vid;
-      }
-      el.srcObject = remoteStream;
-    });
-    peer.on("close", () => {
-      if (remoteVideosRef.current[peerId]) {
-        remoteVideosRef.current[peerId].remove();
-        delete remoteVideosRef.current[peerId];
-      }
-      peer.destroy();
-      delete peersRef.current[peerId];
-    });
-    peersRef.current[peerId] = peer;
-    return peer;
   }
+
+  peer.on("signal", (data) => {
+    socketRef.current.emit("signal", { to: peerId, data });
+  });
+
+  peer.on("stream", (remoteStream) => {
+    let el = remoteVideosRef.current[peerId];
+    if (!el) {
+      const vid = document.createElement("video");
+      vid.id = `remote-${peerId}`;
+      vid.autoplay = true;
+      vid.playsInline = true;
+      vid.style.width = "160px";
+      vid.style.height = "120px";
+      vid.style.borderRadius = "8px";
+      document.getElementById("remote-videos").appendChild(vid);
+      remoteVideosRef.current[peerId] = vid;
+      el = vid;
+    }
+    el.srcObject = remoteStream;
+  });
+
+  peer.on("close", () => {
+    if (remoteVideosRef.current[peerId]) {
+      remoteVideosRef.current[peerId].remove();
+      delete remoteVideosRef.current[peerId];
+    }
+    peer.destroy();
+    delete peersRef.current[peerId];
+  });
+
+  peersRef.current[peerId] = peer;
+  return peer;
+}
 
   // -------------------- MAPA --------------------
   function onMapClick(e) {
@@ -337,7 +377,7 @@ function stopScreenShare() {
             height: 50, 
             padding: 10,
             marginLeft: 200,
-            marginTop: 20,
+            marginTop: 21,
             border: "1px solid #0000006b", 
             borderRadius: 5, 
             background: "#f8f1f1da",
@@ -353,7 +393,7 @@ function stopScreenShare() {
       </div>
       <div className="relative" style={{ 
             width: 1100, 
-            height: 600, 
+            height: 560, 
             padding: 10,
             marginLeft: 200,
             marginTop: 10,
@@ -373,7 +413,7 @@ function stopScreenShare() {
             borderRadius: 5,
             overflow: "hidden",
             width: 1100,
-            height: 600,
+            height: 560,
             marginBottom:10
           }}
         >
@@ -465,8 +505,8 @@ function stopScreenShare() {
           position: "absolute",
           right: 20,
           top: 290,
-          width: 200,
-          height: 390, 
+          width: 250,
+          height: 360, 
           padding: 10,
           marginLeft: 200,
           border: "1px solid #0000006b", 
@@ -500,7 +540,7 @@ function stopScreenShare() {
           position: "absolute",
           right: 20,
           top: 10,
-            width: 200, 
+            width: 250, 
             height: 250, 
             padding: 10,
             marginLeft: 200,
@@ -512,10 +552,13 @@ function stopScreenShare() {
             fontSize: 20,
             color: "#1a0404ff",
             textAlign:"center",
+            justifyContent:"center",
+            display:"flex",
+            alignItems:"center",
             fontWeight:"bolder",
             fontStyle:"italic",
         }}>
-        <div style={{ position: "absolute", right: 10, top: 10, bottom:0, width: 200, paddingTop:15 }}>
+        <div style={{ position: "absolute", right: 10, top: 10, bottom:0, width: 250, paddingTop:15 }}>
           <div style={{ 
             fontSize: 15,
             marginLeft:10, 
@@ -546,7 +589,7 @@ function stopScreenShare() {
            
             
          
-          <div style={{ marginTop: 10, display: "flex", gap: 10 }}>
+          <div style={{ marginTop: 10, display: "flex", gap: 10, display:"flex", justifyContent:"center", alignItems:"center" }}>
               <div>
              {videoEnabled ? (
                 <button onClick={disableVideo} style={{
@@ -557,7 +600,7 @@ function stopScreenShare() {
                   borderRadius: 4,
                   cursor: "pointer",
 
-                }}>Câmera</button>
+                }}> <CameraVideo size={18}/> </button>
               ) : (
                 <button onClick={enableVideo} style={{
                   padding: "6px 12px",
@@ -566,7 +609,7 @@ function stopScreenShare() {
                   border: "none",
                   borderRadius: 4,
                   cursor: "pointer"
-                }}>Câmera</button>
+                }}><CameraVideoOff size={18}/></button>
               )}
             </div>
             <div>
@@ -578,7 +621,7 @@ function stopScreenShare() {
                 ,borderRadius: 4
                 ,cursor: "pointer"
                }}>
-                {audioEnabled? "Audio" : "Audio"}
+                 {audioEnabled ? <Mic size={18}/> : <MicMute size={18}/>} 
               </button>
               </div>
               <div>
@@ -590,7 +633,7 @@ function stopScreenShare() {
                   borderRadius: 4,
                   cursor: "pointer"
                 }}>
-                  Tela
+                 <Display size={18}/>
                 </button>
               </div>
             </div>
@@ -608,7 +651,9 @@ function stopScreenShare() {
             zIndex: 9999,
             boxShadow: "0 6px 20px rgba(0,0,0,0.5)",
             display: "flex",
-            flexDirection: "column"
+            flexDirection: "column",
+            overflow: "hidden", 
+            border: "2px solid #000",
           }}>
             <div style={{
               padding: "3px 10px",

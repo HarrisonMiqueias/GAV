@@ -215,6 +215,8 @@ function stopScreenShare() {
     }
   }
 
+
+
   // -------------------- SOCKET --------------------
   useEffect(() => {
     socketRef.current = io(SOCKET_SERVER, { transports: ["websocket"] });
@@ -271,6 +273,36 @@ function stopScreenShare() {
         localStreamRef.current.getTracks().forEach((t) => t.stop());
     };
   }, []);
+
+
+const walls = [
+  // divisórias e paredes externas
+  { x: 0, y: 0, width: 800, height: 10 }, // parede superior
+  { x: 0, y: 0, width: 10, height: 600 }, // parede esquerda
+  { x: 790, y: 0, width: 10, height: 600 }, // parede direita
+  { x: 0, y: 590, width: 800, height: 10 }, // parede inferior
+
+  // mesas e obstáculos (aproximados)
+  { x: 50, y: 50, width: 120, height: 60 }, // mesa superior esquerda
+  { x: 200, y: 40, width: 150, height: 70 }, // mesa dupla superior direita
+  { x: 400, y: 40, width: 150, height: 70 }, // outra mesa dupla
+  { x: 50, y: 150, width: 200, height: 120 }, // sala de reunião
+  { x: 400, y: 200, width: 180, height: 130 }, // sala de descanso
+  // adicione outros móveis conforme necessário
+];
+
+
+function isColliding(x, y) {
+  const radius = 12; // raio da bolinha
+  return walls.some(wall => 
+    x + radius > wall.x &&
+    x - radius < wall.x + wall.width &&
+    y + radius > wall.y &&
+    y - radius < wall.y + wall.height
+  );
+}
+
+
 
   // -------------------- MOVIMENTAÇÃO --------------------
   useEffect(() => {
@@ -357,13 +389,34 @@ function createPeer(peerId, initiator = true) {
     socketRef.current?.emit("move", { x, y });
   }
 
-  function handleKey(e) {
-    const step = 10;
-    if (e.key === "ArrowUp") setMe((m) => ({ ...m, y: Math.max(0, m.y - step) }));
-    if (e.key === "ArrowDown") setMe((m) => ({ ...m, y: Math.min(600, m.y + step) }));
-    if (e.key === "ArrowLeft") setMe((m) => ({ ...m, x: Math.max(0, m.x - step) }));
-    if (e.key === "ArrowRight") setMe((m) => ({ ...m, x: Math.min(1100, m.x + step) }));
+ function handleKey(e) {
+  const step = 10;
+  let newX = me.x;
+  let newY = me.y;
+
+  if (e.key === "ArrowUp") newY = me.y - step;
+  if (e.key === "ArrowDown") newY = me.y + step;
+  if (e.key === "ArrowLeft") newX = me.x - step;
+  if (e.key === "ArrowRight") newX = me.x + step;
+
+  if (!isColliding(newX, newY)) {
+    setMe({ ...me, x: newX, y: newY });
+    socketRef.current?.emit("move", { x: newX, y: newY });
   }
+}
+
+function onMapClick(e) {
+  const rect = mapRef.current.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  if (!isColliding(x, y)) {
+    setMe({ ...me, x, y });
+    socketRef.current?.emit("move", { x, y });
+  }
+}
+
+
 
   useEffect(() => {
     window.addEventListener("keydown", handleKey);
@@ -432,8 +485,8 @@ function createPeer(peerId, initiator = true) {
     <div
       style={{
         position: "absolute",
-        left: u.x - (u.name?.length * 3), // centralizar o nome em relação ao círculo
-        top: u.y + 20, // um pouco abaixo do círculo
+        left: me.x - (u.name?.length * 3), // centralizar o nome em relação ao círculo
+        top: me.y + 20, // um pouco abaixo do círculo
         fontSize: 12,
         color: "#222",
         background: "rgba(255,255,255,0.8)",

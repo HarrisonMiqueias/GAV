@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { api } from "./api";
+import { api } from "../api";
 import { useNavigate } from "react-router-dom";
-import "../src/CreateUser.css";
+import "../CreateUser.css";
 
 export default function CreateUser() {
   const [name, setName] = useState("");

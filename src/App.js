@@ -1,8 +1,8 @@
 // src/App.js
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import CreateUser from "./CreateUser";
-import GatherLite from "./GatherLite";
+import CreateUser from "./pages/CreateUser";
+import GatherLite from "./pages/GatherLite";
 
 function App() {
   return (

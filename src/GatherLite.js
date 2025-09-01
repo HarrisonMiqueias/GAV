@@ -503,6 +503,8 @@ function createPeer(peerId, initiator = true) {
           <div
             style={{
               position: "absolute",
+              //left: (me.x+2) - USER_RADIUS,
+              //top: (me.y +60) - USER_RADIUS,
               left: (me.x+2) - USER_RADIUS,
               top: (me.y +60) - USER_RADIUS,
               width: USER_RADIUS * 2,

@@ -1,4 +1,4 @@
-import { useLocation } from "react-router-dom";
+import { useLocation,useNavigate  } from "react-router-dom";
 import React, { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 import SimplePeer from "simple-peer";
@@ -15,7 +15,8 @@ export default function GatherLite() {
   const SOCKET_SERVER = process.env.REACT_APP_SOCKET_SERVER || "http://localhost:5000";
   const USER_RADIUS = 60;
   const location = useLocation();
-  const userNam = location.state?.name || "Você";
+  const navigate = useNavigate();
+  const userNam = location.state?.name;
   const [me, setMe] = useState({ id: null, x: 700, y: 300, name: userNam});
   const [users, setUsers] = useState({});
   const [videoEnabled, setVideoEnabled] = useState(false);
@@ -33,6 +34,12 @@ export default function GatherLite() {
   const localStreamRef = useRef(null);
   const mapRef = useRef(null);
 
+
+  useEffect(() => {
+    if (!userNam) {
+      navigate("/", { replace: true });
+    }
+  }, [userNam, navigate]);
 
   // -------------------- PEGAR MÍDIA LOCAL --------------------
   useEffect(() => {

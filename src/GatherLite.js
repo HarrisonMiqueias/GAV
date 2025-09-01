@@ -373,7 +373,7 @@ function createPeer(peerId, initiator = true) {
   return (
     <div className="" style={{ background: "#2de7fbff", height: "100vh", overflow: "hidden" }}>
       <div style={{
-            width: 1100, 
+            width: 1000, 
             height: 50, 
             padding: 10,
             marginLeft: 200,
@@ -389,10 +389,10 @@ function createPeer(peerId, initiator = true) {
             fontWeight:"bolder",
             fontStyle:"italic",
       }}>
-        SiCAV - Sistema de Comunicação Audiovisuais em Vídeo
+        SiCAV - Sistema de Comunicação por Áudio e Vídeo
       </div>
       <div className="relative" style={{ 
-            width: 1100, 
+            width: 1000, 
             height: 560, 
             padding: 10,
             marginLeft: 200,
@@ -408,13 +408,16 @@ function createPeer(peerId, initiator = true) {
           onClick={onMapClick}
           className="absolute inset-0"
           style={{
-            backgroundImage:"url('https://cdna.artstation.com/p/assets/images/images/054/239/544/large/charlotte-r-map-00-v2-wip4.jpg?1664093958')",
+            backgroundImage:"url('https://img.freepik.com/vetores-premium/projeto-da-planta-da-sala-de-aula_1114689-180.jpg?semt=ais_hybrid&w=740&q=80')",
             backgroundSize: "cover",
             borderRadius: 5,
             overflow: "hidden",
-            width: 1100,
+            width: 1000,
             height: 560,
-            marginBottom:10
+            marginBottom:10,  
+            cursor: "pointer",
+            userSelect: "none",
+
           }}
         >
         {Object.entries(users).map(([id, u]) => (
@@ -539,7 +542,7 @@ function createPeer(peerId, initiator = true) {
         <div style={{ 
           position: "absolute",
           right: 20,
-          top: 10,
+          top: 5,
             width: 250, 
             height: 250, 
             padding: 10,

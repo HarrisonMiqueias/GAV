@@ -1,4 +1,4 @@
-import { useLocation,useNavigate  } from "react-router-dom";
+import { useLocation ,useNavigate} from "react-router-dom";
 import React, { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 import SimplePeer from "simple-peer";
@@ -22,8 +22,6 @@ export default function GatherLite() {
   const [videoEnabled, setVideoEnabled] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(false);
   const screenVideoRef = useRef(null);
-  const [isScreenSharing, setIsScreenSharing] = useState(false);
-  const [modalPos, setModalPos] = useState({ x: 100, y: 100 });
   const [dragging, setDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
   const [isScreenModalOpen, setIsScreenModalOpen] = useState(false);
@@ -35,11 +33,13 @@ export default function GatherLite() {
   const mapRef = useRef(null);
 
 
-  useEffect(() => {
+useEffect(() => {
     if (!userNam) {
       navigate("/", { replace: true });
     }
   }, [userNam, navigate]);
+
+
 
   // -------------------- PEGAR MÍDIA LOCAL --------------------
   useEffect(() => {
@@ -81,7 +81,6 @@ export default function GatherLite() {
 
 function onMouseMove(e) {
   if (!dragging) return;
-  setModalPos({ x: e.clientX - dragStart.current.x, y: e.clientY - dragStart.current.y });
 }
 
 function onMouseUp() {
@@ -109,7 +108,6 @@ async function startScreenShare() {
     }
 
     setIsScreenModalOpen(true);
-    setIsScreenSharing(true);
 
     const screenTrack = screenStream.getVideoTracks()[0];
 
@@ -136,7 +134,6 @@ async function startScreenShare() {
 
 function stopScreenShare() {
   setIsScreenModalOpen(false);
-  setIsScreenSharing(false);
 
   // volta pro áudio + opcionalmente câmera
   navigator.mediaDevices.getUserMedia({ video: false, audio: true })
@@ -281,36 +278,6 @@ function stopScreenShare() {
     };
   }, []);
 
-
-const walls = [
-  // divisórias e paredes externas
-  { x: 0, y: 0, width: 800, height: 10 }, // parede superior
-  { x: 0, y: 0, width: 10, height: 600 }, // parede esquerda
-  { x: 790, y: 0, width: 10, height: 600 }, // parede direita
-  { x: 0, y: 590, width: 800, height: 10 }, // parede inferior
-
-  // mesas e obstáculos (aproximados)
-  { x: 50, y: 50, width: 120, height: 60 }, // mesa superior esquerda
-  { x: 200, y: 40, width: 150, height: 70 }, // mesa dupla superior direita
-  { x: 400, y: 40, width: 150, height: 70 }, // outra mesa dupla
-  { x: 50, y: 150, width: 200, height: 120 }, // sala de reunião
-  { x: 400, y: 200, width: 180, height: 130 }, // sala de descanso
-  // adicione outros móveis conforme necessário
-];
-
-
-function isColliding(x, y) {
-  const radius = 12; // raio da bolinha
-  return walls.some(wall => 
-    x + radius > wall.x &&
-    x - radius < wall.x + wall.width &&
-    y + radius > wall.y &&
-    y - radius < wall.y + wall.height
-  );
-}
-
-
-
   // -------------------- MOVIMENTAÇÃO --------------------
   useEffect(() => {
     const interval = setInterval(() => {
@@ -396,34 +363,13 @@ function createPeer(peerId, initiator = true) {
     socketRef.current?.emit("move", { x, y });
   }
 
- function handleKey(e) {
-  const step = 10;
-  let newX = me.x;
-  let newY = me.y;
-
-  if (e.key === "ArrowUp") newY = me.y - step;
-  if (e.key === "ArrowDown") newY = me.y + step;
-  if (e.key === "ArrowLeft") newX = me.x - step;
-  if (e.key === "ArrowRight") newX = me.x + step;
-
-  if (!isColliding(newX, newY)) {
-    setMe({ ...me, x: newX, y: newY });
-    socketRef.current?.emit("move", { x: newX, y: newY });
+  function handleKey(e) {
+    const step = 10;
+    if (e.key === "ArrowUp") setMe((m) => ({ ...m, y: Math.max(0, m.y - step) }));
+    if (e.key === "ArrowDown") setMe((m) => ({ ...m, y: Math.min(600, m.y + step) }));
+    if (e.key === "ArrowLeft") setMe((m) => ({ ...m, x: Math.max(0, m.x - step) }));
+    if (e.key === "ArrowRight") setMe((m) => ({ ...m, x: Math.min(1100, m.x + step) }));
   }
-}
-
-function onMapClick(e) {
-  const rect = mapRef.current.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-
-  if (!isColliding(x, y)) {
-    setMe({ ...me, x, y });
-    socketRef.current?.emit("move", { x, y });
-  }
-}
-
-
 
   useEffect(() => {
     window.addEventListener("keydown", handleKey);
@@ -492,8 +438,8 @@ function onMapClick(e) {
     <div
       style={{
         position: "absolute",
-        left: me.x - (u.name?.length * 3), // centralizar o nome em relação ao círculo
-        top: me.y + 20, // um pouco abaixo do círculo
+        left: u.x - (u.name?.length * 3), // centralizar o nome em relação ao círculo
+        top: u.y + 20, // um pouco abaixo do círculo
         fontSize: 12,
         color: "#222",
         background: "rgba(255,255,255,0.8)",

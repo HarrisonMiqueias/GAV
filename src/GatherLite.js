@@ -438,8 +438,8 @@ function createPeer(peerId, initiator = true) {
     <div
       style={{
         position: "absolute",
-        left: u.x - (u.name?.length * 3), // centralizar o nome em relação ao círculo
-        top: u.y + 20, // um pouco abaixo do círculo
+        left: me.x - (u.name?.length * 3), // centralizar o nome em relação ao círculo
+        top: me.y + 20, // um pouco abaixo do círculo
         fontSize: 12,
         color: "#222",
         background: "rgba(255,255,255,0.8)",

@@ -4,6 +4,7 @@ import io from "socket.io-client";
 import SimplePeer from "simple-peer";
 import process from "process";
 import { CameraVideo, CameraVideoOff, Mic, MicMute, Display } from "react-bootstrap-icons";
+import background from "./background.jpg"; // caminho relativo ao GatherLite.js
 window.process = process;
 
 
@@ -404,21 +405,21 @@ function createPeer(peerId, initiator = true) {
             margin:10
             }}>
         <div
-          ref={mapRef}
-          onClick={onMapClick}
-          className="absolute inset-0"
-          style={{
-            backgroundImage:"url('https://img.freepik.com/vetores-premium/projeto-da-planta-da-sala-de-aula_1114689-180.jpg?semt=ais_hybrid&w=740&q=80')",
-            backgroundSize: "cover",
-            borderRadius: 5,
-            overflow: "hidden",
-            width: 1000,
-            height: 560,
-            marginBottom:10,  
-            cursor: "pointer",
-            userSelect: "none",
-
-          }}
+         ref={mapRef}
+  onClick={onMapClick}
+  style={{
+    backgroundImage: `url(${background})`,
+    backgroundSize: "cover",     // mostra a imagem inteira
+    backgroundPosition: "center",  // centraliza
+    border: "2px solid #000",
+    borderRadius: 5,
+    overflow: "hidden",
+    width: 1000,
+    height: 560,
+    marginBottom: 10,
+    cursor: "pointer",
+    userSelect: "none",
+  }}
         >
         {Object.entries(users).map(([id, u]) => (
   <React.Fragment key={id}>
@@ -443,10 +444,10 @@ function createPeer(peerId, initiator = true) {
     <div
   style={{
     position: "absolute",
-    left: u.x - 11,
-    top: u.y + 45,
-    width: 32,
-    height: 32,
+    left: me.x - 11,
+    top: me.y + 45,
+    width: 25,
+    height: 25,
     borderRadius: "50%",
     background: id === me.id ? "#4ade80" : "#60a5fa",
     display: "flex",

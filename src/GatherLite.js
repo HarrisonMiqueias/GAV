@@ -4,7 +4,7 @@ import io from "socket.io-client";
 import SimplePeer from "simple-peer";
 import process from "process";
 import { CameraVideo, CameraVideoOff, Mic, MicMute, Display } from "react-bootstrap-icons";
-import background from "./background.jpg"; // caminho relativo ao GatherLite.js
+import background from "./overlay.png"; // caminho relativo ao GatherLite.js
 window.process = process;
 
 
@@ -351,14 +351,14 @@ function createPeer(peerId, initiator = true) {
   // -------------------- MAPA --------------------
   function onMapClick(e) {
     const rect = mapRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = e.clientX - rect.left -4;
+    const y = e.clientY - rect.top -60;
     setMe((m) => ({ ...m, x, y }));
     socketRef.current?.emit("move", { x, y });
   }
 
   function handleKey(e) {
-    const step = 50;
+    const step = 10;
     if (e.key === "ArrowUp") setMe((m) => ({ ...m, y: Math.max(0, m.y - step) }));
     if (e.key === "ArrowDown") setMe((m) => ({ ...m, y: Math.min(600, m.y + step) }));
     if (e.key === "ArrowLeft") setMe((m) => ({ ...m, x: Math.max(0, m.x - step) }));
@@ -408,10 +408,12 @@ function createPeer(peerId, initiator = true) {
          ref={mapRef}
   onClick={onMapClick}
   style={{
-    backgroundImage: `url(${background})`,
-    backgroundSize: "cover",     // mostra a imagem inteira
+    backgroundImage: `url(${background})`, // sobrepõe
+    backgroundSize: "contain",     // mostra a imagem inteira
     backgroundPosition: "center",  // centraliza
     border: "2px solid #000",
+    backgroundRepeat: "no-repeat",
+    position: "relative",
     borderRadius: 5,
     overflow: "hidden",
     width: 1000,
@@ -420,7 +422,9 @@ function createPeer(peerId, initiator = true) {
     cursor: "pointer",
     userSelect: "none",
   }}
-        >
+  >
+   {/* Imagem centralizada */}
+
         {Object.entries(users).map(([id, u]) => (
   <React.Fragment key={id}>
     

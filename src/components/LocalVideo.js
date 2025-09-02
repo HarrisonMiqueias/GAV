@@ -40,7 +40,7 @@ export default function LocalVideo({
     if (videoTrack) {
       videoTrack.stop();
       localStreamRef.current.removeTrack(videoTrack);
-      setVideoEnabled(true);
+      setVideoEnabled(false);
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = new MediaStream(localStreamRef.current.getTracks());
       }

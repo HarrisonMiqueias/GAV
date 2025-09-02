@@ -142,8 +142,7 @@ export default function LocalVideo({
         </button>
 
         <button
-         onClick={videoEnabled ? disableVideo : enableVideo}
-          //onClick={toggleAudio}
+          onClick={toggleAudio}
           style={{
             padding: "6px 12px",
             backgroundColor: audioEnabled ? "#22c55e" : "#ef4444",

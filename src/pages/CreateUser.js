@@ -57,7 +57,7 @@ export default function CreateUser() {
             fontSize: "24px", 
             fontWeight: "bold",
             color: "#007BFF", 
-            }}>Bem-vindo ao SiCAV!</div>
+            }}>Bem-vindo ao SiCAV</div>
         <h2 className="text-xl mb-4" style={{
           fontWeight: "bold", 
           marginBottom: "20px",

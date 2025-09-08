@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import io from "socket.io-client";
 import process from "process";
+import {Row, Col} from 'react-bootstrap';
 
 import Header from "../components/Header";
 import MapArea from "../components/MapArea";
@@ -112,28 +113,51 @@ export default function GatherLite() {
   }, []);
 
   return (
-    <div style={{ background: "#2de7fbff", height: "100vh", overflow: "hidden" }}>
-      <Header />
-      <MapArea
-        mapRef={mapRef}
-        users={users}
-        me={me}
-        setMe={setMe}
-        USER_RADIUS={USER_RADIUS}
-        background={background}
-      />
-      <RemoteVideos remoteVideosRef={remoteVideosRef} />
-      <LocalVideo
-        localVideoRef={localVideoRef}
-        videoEnabled={videoEnabled}
-        audioEnabled={audioEnabled}
-        setVideoEnabled={setVideoEnabled}
-        setAudioEnabled={setAudioEnabled}
-        peersRef={peersRef}
-        localStreamRef={localStreamRef}
-        screenVideoRef={screenVideoRef}
-        setIsScreenModalOpen={setIsScreenModalOpen}
-      />
+    <div style={{ background: "#4cd0dfff", height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column", alignItems: "start", userSelect: "none" }}>
+      <Row style={{width:"100%"}}>
+        <Col style={{width:"100%"}} >
+          <Header />
+        </Col>
+      </Row>
+      <Row style={{width:"100%", flex:1, display:"flex", flexDirection:"row", alignItems:"start", justifyContent:"start", overflow:"hidden"}}>
+        <Col style={{width:"20%"}}>
+          <Row>
+            <Col style={{display:"flex", flexDirection:"row", alignItems:"center", justifyContent:"center", marginTop:10, marginBottom:10}}>
+              <LocalVideo
+                localVideoRef={localVideoRef}
+                videoEnabled={videoEnabled}
+                audioEnabled={audioEnabled}
+                setVideoEnabled={setVideoEnabled}
+                setAudioEnabled={setAudioEnabled}
+                peersRef={peersRef}
+                localStreamRef={localStreamRef}
+                screenVideoRef={screenVideoRef}
+                setIsScreenModalOpen={setIsScreenModalOpen}
+              />  
+            </Col>
+          </Row>
+          <Row>
+            <Col  style={{display:"flex", flexDirection:"row", alignItems:"center", justifyContent:"center", marginTop:10, marginBottom:10}}>
+              <RemoteVideos remoteVideosRef={remoteVideosRef} />
+            </Col>
+          </Row>
+        </Col>
+        <Col style={{width:"80%",padding:10, display:"flex", flexDirection:"row", alignItems:"center", justifyContent:"center", position:"relative"}}>
+          <MapArea
+            mapRef={mapRef}
+            users={users}
+            me={me}
+            setMe={setMe}
+            USER_RADIUS={USER_RADIUS}
+            background={background}
+            audio={audioEnabled}
+          />
+        </Col>
+      </Row>
+      
+      
+      
+      
       {isScreenModalOpen && (
         <ScreenShareModal
           screenVideoRef={screenVideoRef}

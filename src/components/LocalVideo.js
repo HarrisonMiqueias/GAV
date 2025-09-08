@@ -85,48 +85,39 @@ export default function LocalVideo({
 
   return (
     <div style={{
-      position: "absolute",
-      right: 50,
-      top: 20,
-      width: 250,
-      height: 250,
+      width:"80%",
+      height: 200,
       padding: 10,
       border: "1px solid #0000006b",
       borderRadius: 5,
       background: "#f8f1f1da",
       boxShadow: "0 4px 10px rgba(0, 0, 0, 0.78)",
-      display: "flex",
       flexDirection: "column",
-      alignItems: "center",
       fontWeight: "bolder",
       fontStyle: "italic",
+      overflow: "hidden",
+      display:"flex",
+      gap:10,
+      justifyContent: "center",
+      alignItems:"center",
     }}>
-      <div style={{
-        fontSize: 15,
-        marginBottom: 5,
-        color: "#1a0404ff",
-        background: "rgba(45, 240, 65, 0.61)",
-        padding: "2px 6px",
-        borderRadius: 4,
-        width: "85px",
-        textAlign: "center"
-      }}>Sua Câmera</div>
-
-      <video
+      <div alignItems="center" gap={10}>
+        <video
         ref={localVideoRef}
         muted
         autoPlay
         playsInline
         style={{
-          width: 195,
-          height: 145,
+          width: 200,
+          height: 150,
           borderRadius: 10,
           background: "#0000006b",
-          marginBottom: 10
+          objectFit: "cover"
         }}
       />
+      </div>
 
-      <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+      <div style={{ display:"flex",gap: 10, justifyContent: "start" }}>
         <button
           onClick={videoEnabled ? disableVideo : enableVideo}
           style={{

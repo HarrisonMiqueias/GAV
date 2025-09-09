@@ -159,11 +159,12 @@ export default function GatherLite() {
       
       
       {isScreenModalOpen && (
-        <ScreenShareModal
-          screenVideoRef={screenVideoRef}
-          stopScreenShare={() => setIsScreenModalOpen(false)}
-        />
-      )}
+  <ScreenShareModal
+    screenVideoRef={screenVideoRef}
+    onClose={() => setIsScreenModalOpen(false)}
+  />
+)}
+
     </div>
   );
 }

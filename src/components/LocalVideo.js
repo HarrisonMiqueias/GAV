@@ -61,27 +61,71 @@ export default function LocalVideo({
     }
   }
 
-  async function startScreenShare() {
-    try {
-      const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-      if (screenVideoRef.current) {
-        screenVideoRef.current.srcObject = screenStream;
-        await screenVideoRef.current.play();
-      }
-      setIsScreenModalOpen(true);
+async function startScreenShare() {
+  try {
+    // Recomendo começar sem audio para evitar bloqueios: mude para true só se precisar
+    const screenStream = await navigator.mediaDevices.getDisplayMedia({
+      video: { cursor: "always" },
+      audio: false,
+    });
 
-      const screenTrack = screenStream.getVideoTracks()[0];
-      Object.values(peersRef.current).forEach(peer => {
+    if (!screenStream) throw new Error("Nenhum stream retornado por getDisplayMedia");
+
+    const screenTrack = screenStream.getVideoTracks()[0];
+    console.log("screenStream tracks:", screenStream.getTracks(), "screenTrack:", screenTrack);
+
+    // atribui ao vídeo do modal e tenta tocar
+    if (screenVideoRef.current) {
+      screenVideoRef.current.srcObject = screenStream;
+      screenVideoRef.current.muted = true;
+      await screenVideoRef.current.play().catch(err => console.warn(err)); 
+    }
+
+    setIsScreenModalOpen(true);
+
+    // envia pra peers (substitui track ou adiciona)
+    Object.values(peersRef.current).forEach(peer => {
+      try {
         const sender = peer._pc.getSenders().find(s => s.track?.kind === "video");
-        if (sender) sender.replaceTrack(screenTrack);
-        else peer._pc.addTrack(screenTrack, screenStream);
+        if (sender && screenTrack) {
+          sender.replaceTrack(screenTrack);
+        } else if (screenTrack) {
+          peer._pc.addTrack(screenTrack, screenStream);
+        }
+      } catch (err) {
+        console.warn("Erro ao atualizar peer com track de tela:", err);
+      }
+    });
+
+    // quando usuário parar de compartilhar
+    screenTrack.onended = () => {
+      console.log("Compartilhamento de tela finalizado pelo usuário.");
+      setIsScreenModalOpen(false);
+
+      // tenta restaurar a câmera, se existir
+      const camTrack = localStreamRef.current?.getVideoTracks()[0];
+      Object.values(peersRef.current).forEach(peer => {
+        try {
+          const sender = peer._pc.getSenders().find(s => s.track?.kind === "video");
+          if (sender && camTrack) sender.replaceTrack(camTrack);
+          else if (camTrack) peer._pc.addTrack(camTrack, localStreamRef.current);
+        } catch (err) {
+          console.warn("Erro ao restaurar track da câmera:", err);
+        }
       });
 
-      screenTrack.onended = () => setIsScreenModalOpen(false);
-    } catch (err) {
-      console.error("Erro ao compartilhar tela:", err);
-    }
+      // garante que a screenStream pare todos os tracks
+      screenStream.getTracks().forEach(t => {
+        try { t.stop(); } catch(e) {}
+      });
+    };
+  } catch (err) {
+    console.error("Erro ao compartilhar tela:", err);
   }
+}
+
+
+
 
   return (
     <div style={{
@@ -101,8 +145,8 @@ export default function LocalVideo({
       justifyContent: "center",
       alignItems:"center",
     }}>
-      <div alignItems="center" gap={10}>
-        <video
+      <div alignItems="center">
+        <video 
         ref={localVideoRef}
         muted
         autoPlay

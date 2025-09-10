@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef,useState } from "react";
 
 export default function ScreenShareModal({ screenVideoRef, onClose, peersRef, localStreamRef }) {
   const startedRef = useRef(false); // impede múltiplas execuções
+  const [minimized, setMinimized] = useState(false);
 
   useEffect(() => {
     if (startedRef.current) return; // se já iniciou, não roda de novo
@@ -52,30 +53,34 @@ export default function ScreenShareModal({ screenVideoRef, onClose, peersRef, lo
   }, [onClose, peersRef, localStreamRef, screenVideoRef]);
 
   return (
-    <div
+<div
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0,0,0,0.7)",
+        background: minimized ? "transparent" : "rgba(0,0,0,0.7)",
         display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
+        justifyContent: minimized ? "flex-end" : "center",
+        alignItems: minimized ? "flex-end" : "center",
         zIndex: 2000,
+        pointerEvents: minimized ? "none" : "auto", // deixa clicável só o vídeo quando minimizado
       }}
     >
       <div
         style={{
           position: "relative",
-          width: "85%",
-          height: "85%",
+          width: minimized ? "300px" : "85%",
+          height: minimized ? "200px" : "85%",
           background: "#000",
           borderRadius: 12,
           boxShadow: "0 8px 20px rgba(0,0,0,0.5)",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
+          margin: minimized ? "10px" : "0",
+          pointerEvents: "auto", // mantém o vídeo interativo
         }}
       >
+        {/* Botão fechar */}
         <button
           onClick={onClose}
           style={{
@@ -94,19 +99,48 @@ export default function ScreenShareModal({ screenVideoRef, onClose, peersRef, lo
           ✕
         </button>
 
-        <div style={{ flexGrow: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
+        {/* Botão minimizar */}
+        <button
+          onClick={() => setMinimized(!minimized)}
+          style={{
+            position: "absolute",
+            top: 12,
+            right: 48,
+            background: "rgba(255,255,255,0.08)",
+            border: "none",
+            color: "#fff",
+            padding: "6px 8px",
+            borderRadius: 6,
+            cursor: "pointer",
+            zIndex: 10,
+          }}
+        >
+          {minimized ? "▢" : "▁"}
+        </button>
+
+        <div
+          style={{
+            flexGrow: 1,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            width: "100%",
+            height: "100%",
+            padding: 12,
+          }}
+        >
           <video
             ref={screenVideoRef}
             autoPlay
             playsInline
             muted
             onLoadedMetadata={() => {
-    if (screenVideoRef?.current) {
-      screenVideoRef.current
-        .play()
-        .catch(err => console.error("Erro ao iniciar vídeo de tela:", err));
-    }
-  }}
+              if (screenVideoRef?.current) {
+                screenVideoRef.current
+                  .play()
+                  .catch((err) => console.error("Erro ao iniciar vídeo de tela:", err));
+              }
+            }}
             style={{
               maxWidth: "100%",
               maxHeight: "100%",

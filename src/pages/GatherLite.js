@@ -36,7 +36,6 @@ export default function GatherLite() {
   const localStreamRef = useRef(null);
   const screenVideoRef = useRef(null);
   const mapRef = useRef(null);
-  const dragStart = useRef({ x: 0, y: 0 });
 
   // Redireciona se não houver usuário
   useEffect(() => {
@@ -131,7 +130,7 @@ export default function GatherLite() {
     });
 
     return () => socketRef.current.disconnect();
-  }, []);
+  }, [SOCKET_SERVER]);
 
 
 
@@ -240,14 +239,13 @@ export default function GatherLite() {
 
       {/* Modal automático quando outro usuário compartilha tela */}
       {remoteScreenStream && (
-  <ScreenShareModal
-    screenVideoRef={remoteScreenVideoRef}
-    onClose={() => setRemoteScreenStream(null)}
-    peersRef={peersRef}
-    localStreamRef={localStreamRef}
-  />
-)}
-
+        <ScreenShareModal
+          screenVideoRef={{ current: { srcObject: remoteScreenStream } }}
+          onClose={() => setRemoteScreenStream(null)}
+          peersRef={peersRef}
+          localStreamRef={localStreamRef}
+        />
+      )}
     </div>
   );
 }

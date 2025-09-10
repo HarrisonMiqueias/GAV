@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import io from "socket.io-client";
 import process from "process";
-import {Row, Col} from 'react-bootstrap';
+import { Row, Col } from "react-bootstrap";
 
 import Header from "../components/Header";
 import MapArea from "../components/MapArea";
@@ -27,7 +27,7 @@ export default function GatherLite() {
   const [videoEnabled, setVideoEnabled] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [isScreenModalOpen, setIsScreenModalOpen] = useState(false);
-  const [dragging, setDragging] = useState(false);
+  const [remoteScreenStream, setRemoteScreenStream] = useState(null); // 👈 novo modal remoto
 
   const socketRef = useRef(null);
   const peersRef = useRef({});
@@ -59,7 +59,7 @@ export default function GatherLite() {
     initMedia();
 
     return () => {
-      localStreamRef.current?.getTracks().forEach(t => t.stop());
+      localStreamRef.current?.getTracks().forEach((t) => t.stop());
     };
   }, []);
 
@@ -72,8 +72,10 @@ export default function GatherLite() {
         const dx = u.x - me.x;
         const dy = u.y - me.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist <= USER_RADIUS && !peersRef.current[id]) createPeer(id, true, localStreamRef, peersRef, remoteVideosRef, socketRef);
-        else if (dist > USER_RADIUS && peersRef.current[id]) {
+
+        if (dist <= USER_RADIUS && !peersRef.current[id]) {
+          createPeer(id, true, localStreamRef, peersRef, remoteVideosRef, socketRef, setRemoteScreenStream);
+        } else if (dist > USER_RADIUS && peersRef.current[id]) {
           peersRef.current[id].destroy();
           delete peersRef.current[id];
         }
@@ -83,13 +85,23 @@ export default function GatherLite() {
     return () => clearInterval(interval);
   }, [me, users]);
 
+
+  const remoteScreenVideoRef = useRef(null);
+
+    useEffect(() => {
+      if (remoteScreenStream && remoteScreenVideoRef.current) {
+        remoteScreenVideoRef.current.srcObject = remoteScreenStream;
+      }
+    }, [remoteScreenStream]);
+
+
   // Socket
   useEffect(() => {
     socketRef.current = io(SOCKET_SERVER, { transports: ["websocket"] });
 
     socketRef.current.on("connect", () => {
       const myId = socketRef.current.id;
-      setMe(prev => {
+      setMe((prev) => {
         const newMe = { ...prev, id: myId };
         socketRef.current.emit("join", { x: newMe.x, y: newMe.y, name: newMe.name });
         return newMe;
@@ -97,32 +109,73 @@ export default function GatherLite() {
     });
 
     socketRef.current.on("state", (serverUsers) => setUsers(serverUsers));
+
     socketRef.current.on("user-left", (id) => {
-      setUsers(prev => { const clone = { ...prev }; delete clone[id]; return clone; });
+      setUsers((prev) => {
+        const clone = { ...prev };
+        delete clone[id];
+        return clone;
+      });
       peersRef.current[id]?.destroy();
       delete peersRef.current[id];
       remoteVideosRef.current[id]?.remove();
       delete remoteVideosRef.current[id];
     });
+
     socketRef.current.on("signal", ({ from, data }) => {
-      if (!peersRef.current[from]) createPeer(from, false, localStreamRef, peersRef, remoteVideosRef, socketRef).signal(data);
-      else peersRef.current[from].signal(data);
+      if (!peersRef.current[from]) {
+        createPeer(from, false, localStreamRef, peersRef, remoteVideosRef, socketRef, setRemoteScreenStream).signal(data);
+      } else {
+        peersRef.current[from].signal(data);
+      }
     });
 
     return () => socketRef.current.disconnect();
   }, []);
 
+
+
   return (
-    <div style={{ background: "#4cd0dfff", height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column", alignItems: "start", userSelect: "none" }}>
-      <Row style={{width:"100%"}}>
-        <Col style={{width:"100%"}} >
+    <div
+      style={{
+        background: "#4cd0dfff",
+        height: "100vh",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "start",
+        userSelect: "none",
+      }}
+    >
+      <Row style={{ width: "100%" }}>
+        <Col style={{ width: "100%" }}>
           <Header />
         </Col>
       </Row>
-      <Row style={{width:"100%", flex:1, display:"flex", flexDirection:"row", alignItems:"start", justifyContent:"start", overflow:"hidden"}}>
-        <Col style={{width:"20%"}}>
+
+      <Row
+        style={{
+          width: "100%",
+          flex: 1,
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "start",
+          justifyContent: "start",
+          overflow: "hidden",
+        }}
+      >
+        <Col style={{ width: "20%" }}>
           <Row>
-            <Col style={{display:"flex", flexDirection:"row", alignItems:"center", justifyContent:"center", marginTop:10, marginBottom:10}}>
+            <Col
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                marginTop: 10,
+                marginBottom: 10,
+              }}
+            >
               <LocalVideo
                 localVideoRef={localVideoRef}
                 videoEnabled={videoEnabled}
@@ -133,16 +186,36 @@ export default function GatherLite() {
                 localStreamRef={localStreamRef}
                 screenVideoRef={screenVideoRef}
                 setIsScreenModalOpen={setIsScreenModalOpen}
-              />  
+              />
             </Col>
           </Row>
           <Row>
-            <Col  style={{display:"flex", flexDirection:"row", alignItems:"center", justifyContent:"center", marginTop:10, marginBottom:10}}>
+            <Col
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                marginTop: 10,
+                marginBottom: 10,
+              }}
+            >
               <RemoteVideos remoteVideosRef={remoteVideosRef} />
             </Col>
           </Row>
         </Col>
-        <Col style={{width:"80%",padding:10, display:"flex", flexDirection:"row", alignItems:"center", justifyContent:"center", position:"relative"}}>
+
+        <Col
+          style={{
+            width: "80%",
+            padding: 10,
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            position: "relative",
+          }}
+        >
           <MapArea
             mapRef={mapRef}
             users={users}
@@ -154,14 +227,24 @@ export default function GatherLite() {
           />
         </Col>
       </Row>
-      
-      
-      
-      
+
+      {/* Modal para minha tela compartilhada */}
       {isScreenModalOpen && (
+        <ScreenShareModal
+          screenVideoRef={screenVideoRef}
+          onClose={() => setIsScreenModalOpen(false)}
+          peersRef={peersRef}
+          localStreamRef={localStreamRef}
+        />
+      )}
+
+      {/* Modal automático quando outro usuário compartilha tela */}
+      {remoteScreenStream && (
   <ScreenShareModal
-    screenVideoRef={screenVideoRef}
-    onClose={() => setIsScreenModalOpen(false)}
+    screenVideoRef={remoteScreenVideoRef}
+    onClose={() => setRemoteScreenStream(null)}
+    peersRef={peersRef}
+    localStreamRef={localStreamRef}
   />
 )}
 

@@ -1,7 +1,56 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 
-export default function ScreenShareModal({ screenVideoRef, onClose }) {
-  // Não precisamos do isOpen aqui porque você já faz a renderização condicional fora.
+export default function ScreenShareModal({ screenVideoRef, onClose, peersRef, localStreamRef }) {
+  const startedRef = useRef(false); // impede múltiplas execuções
+
+  useEffect(() => {
+    if (startedRef.current) return; // se já iniciou, não roda de novo
+    startedRef.current = true;
+
+    async function startScreenShare() {
+      try {
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({
+          video: true,
+          audio: false,
+        });
+
+        const screenTrack = screenStream.getVideoTracks()[0];
+        if (screenVideoRef.current) {
+          screenVideoRef.current.srcObject = screenStream;
+          screenVideoRef.current.muted = true;
+          await screenVideoRef.current.play().catch(err => console.warn("Erro play:", err));
+        }
+
+        // envia pros peers
+       Object.values(peersRef.current).forEach(peer => {
+          const sender = peer._pc.getSenders().find(s => s.track?.kind === "video");
+          if (sender && screenTrack) sender.replaceTrack(screenTrack);
+          else if (screenTrack) peer._pc.addTrack(screenTrack, screenStream);
+        });
+
+
+        // quando o usuário parar de compartilhar
+        screenTrack.onended = () => {
+          console.log("Compartilhamento de tela finalizado.");
+          onClose();
+
+          const camTrack = localStreamRef.current?.getVideoTracks()[0];
+          Object.values(peersRef.current).forEach(peer => {
+            const sender = peer._pc.getSenders().find(s => s.track?.kind === "video");
+            if (sender && camTrack) sender.replaceTrack(camTrack);
+          });
+
+          screenStream.getTracks().forEach(t => t.stop());
+        };
+      } catch (err) {
+        console.error("Erro ao compartilhar tela:", err);
+        onClose(); // se cancelar a escolha da tela, fecha o modal
+      }
+    }
+
+    startScreenShare();
+  }, [onClose, peersRef, localStreamRef, screenVideoRef]);
+
   return (
     <div
       style={{
@@ -27,7 +76,6 @@ export default function ScreenShareModal({ screenVideoRef, onClose }) {
           alignItems: "center",
         }}
       >
-        {/* Botão fechar no canto superior direito */}
         <button
           onClick={onClose}
           style={{
@@ -46,31 +94,19 @@ export default function ScreenShareModal({ screenVideoRef, onClose }) {
           ✕
         </button>
 
-        {/* Área central do vídeo (o bloco que você pediu como modal) */}
-        <div
-          style={{
-            display: "flex",
-            flexGrow: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            width: "100%",
-            height: "100%",
-            padding: 12,
-          }}
-        >
+        <div style={{ flexGrow: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
           <video
             ref={screenVideoRef}
             autoPlay
             playsInline
             muted
             onLoadedMetadata={() => {
-              // React usa onLoadedMetadata (camelCase)
-              if (screenVideoRef?.current) {
-                screenVideoRef.current
-                  .play()
-                  .catch(err => console.error("Erro ao iniciar vídeo de tela:", err));
-              }
-            }}
+    if (screenVideoRef?.current) {
+      screenVideoRef.current
+        .play()
+        .catch(err => console.error("Erro ao iniciar vídeo de tela:", err));
+    }
+  }}
             style={{
               maxWidth: "100%",
               maxHeight: "100%",

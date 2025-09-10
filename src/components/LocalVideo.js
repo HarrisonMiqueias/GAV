@@ -65,7 +65,7 @@ async function startScreenShare() {
   try {
     // Recomendo começar sem audio para evitar bloqueios: mude para true só se precisar
     const screenStream = await navigator.mediaDevices.getDisplayMedia({
-      video: { cursor: "always" },
+      video: true,
       audio: false,
     });
 
@@ -75,13 +75,13 @@ async function startScreenShare() {
     console.log("screenStream tracks:", screenStream.getTracks(), "screenTrack:", screenTrack);
 
     // atribui ao vídeo do modal e tenta tocar
-    if (screenVideoRef.current) {
-      screenVideoRef.current.srcObject = screenStream;
-      screenVideoRef.current.muted = true;
-      await screenVideoRef.current.play().catch(err => console.warn(err)); 
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = screenStream;
+      localVideoRef.current.muted = true;
+      await localVideoRef.current.play().catch(err => console.warn(err)); 
     }
 
-    setIsScreenModalOpen(true);
+    //setIsScreenModalOpen(true);
 
     // envia pra peers (substitui track ou adiciona)
     Object.values(peersRef.current).forEach(peer => {
@@ -191,7 +191,7 @@ async function startScreenShare() {
         </button>
 
         <button
-          onClick={startScreenShare}
+           onClick={() => setIsScreenModalOpen(true)}
           style={{
             padding: "6px 12px",
             backgroundColor: "#3b82f6",

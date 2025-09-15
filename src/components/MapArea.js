@@ -63,7 +63,9 @@ export default function MapArea({ mapRef, users, me, setMe, USER_RADIUS, backgro
         cursor: "pointer",
       }}
     >
-      {Object.entries(users).map(([id, u]) => (
+      {Object.entries(users)
+       .filter(([id, u]) => u.name !== me.name)
+       .map(([id, u]) => (
         <React.Fragment key={id}>
           {/* Nome acima da bolinha */}
           <div
@@ -92,7 +94,7 @@ export default function MapArea({ mapRef, users, me, setMe, USER_RADIUS, backgro
               width: CIRCLE_SIZE,
               height: CIRCLE_SIZE,
               borderRadius: "50%",
-              background: id === me.id ? "#4ade80" : "#60a5fa",
+              background: "#60a5fa",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -107,13 +109,60 @@ export default function MapArea({ mapRef, users, me, setMe, USER_RADIUS, backgro
             )}
           </div>
 
+          
+        </React.Fragment>
+      ))}
+
+
+      {/* Nome acima da bolinha */}
+          <div
+            style={{
+              position: "absolute",
+              left: me.x - 5 - (me.name?.length * 3),
+              top: me.y - 35,
+              fontSize: 12,
+              color: "#222",
+              background: "rgba(255,255,255,0.8)",
+              padding: "2px 6px",
+              borderRadius: 4,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {me.name}
+            
+          </div>
+
+          {/* Bolinha */}
+          <div
+            style={{
+              position: "absolute",
+              left: me.x - CIRCLE_SIZE / 2,
+              top: me.y - CIRCLE_SIZE / 2,
+              width: CIRCLE_SIZE,
+              height: CIRCLE_SIZE,
+              borderRadius: "50%",
+              background: me.id ? "#4ade80" : "#60a5fa",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#fff",
+              fontSize: 12,
+              boxShadow: "0 4px 10px rgba(0,0,0,0.78)",
+            }}
+          >
+            {me.name?.charAt(0).toUpperCase() || "?"}
+            {!audio && (
+              <BiSolidVolumeMute size={18} style={{ position: "absolute", bottom: -10, right: -10, color: "#ff0000ff", borderRadius: "50%" }} />
+            )}
+          </div>
+
           {/* Raio só no usuário atual */}
-          {id === me.id && (
+          {me.id && (
             <div
               style={{
                 position: "absolute",
-                left: u.x - USER_RADIUS,
-                top: u.y - USER_RADIUS,
+                left: me.x - USER_RADIUS,
+                top: me.y - USER_RADIUS,
                 width: USER_RADIUS * 2,
                 height: USER_RADIUS * 2,
                 borderRadius: "50%",
@@ -122,8 +171,6 @@ export default function MapArea({ mapRef, users, me, setMe, USER_RADIUS, backgro
               }}
             />
           )}
-        </React.Fragment>
-      ))}
     </div>
   );
 }

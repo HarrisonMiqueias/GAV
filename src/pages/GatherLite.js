@@ -10,7 +10,7 @@ import LocalVideo from "../components/LocalVideo";
 import RemoteVideos from "../components/RemoteVideos";
 import ScreenShareModal from "../components/ScreenShareModal";
 import { createPeer } from "../utils/peers";
-import background from "../assets/overlay.png";
+import background from "../assets/background.png";
 
 window.process = process;
 

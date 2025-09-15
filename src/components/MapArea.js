@@ -56,6 +56,7 @@ export default function MapArea({ mapRef, users, me, setMe, USER_RADIUS, backgro
         backgroundImage: `url(${background})`,
         backgroundSize: "contain",
         backgroundPosition: "center",
+        backgroundSize:1100,
         backgroundRepeat: "no-repeat",
         position: "relative",
         overflow: "hidden",

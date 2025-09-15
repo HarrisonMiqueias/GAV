@@ -23,7 +23,8 @@ export default function LocalVideo({
         setVideoEnabled(true);
         if (localVideoRef.current) localVideoRef.current.srcObject = localStreamRef.current;
 
-        Object.values(peersRef.current).forEach(peer => {
+        Object.values(peersRef.current)
+        .forEach(peer => {
           const sender = peer._pc.getSenders().find(s => s.track?.kind === "video");
           if (sender) sender.replaceTrack(videoTrack);
           else peer._pc.addTrack(videoTrack, localStreamRef.current);

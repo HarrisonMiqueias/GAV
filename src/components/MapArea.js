@@ -148,7 +148,7 @@ export default function MapArea({
   return (
     <div
       ref={mapRef}
-      onClick={onMapClick}
+      onDoubleClick={onMapClick}
       style={{
         width: 1100,
         height: 600,
@@ -206,6 +206,23 @@ export default function MapArea({
           }}
         />
       )}
+
+      {Object.entries(users)
+        .filter(([id, u]) => u.id !== me.id)
+        .map(([id, u]) => (
+         <li index={id} 
+          style={{
+            width:"10%",
+            borderRadius:8,
+            padding:2,
+            margin:2,
+            marginTop:5,
+            fontWeight:"bold",
+            color:"rgba(255, 255, 255, 0.93)",
+            background:"rgba(214, 212, 212, 0.63)"
+          }}
+         >{u.name}</li>
+        ))}
     </div>
   );
 }

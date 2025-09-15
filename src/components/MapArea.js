@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Border } from "react-bootstrap-icons";
 import { BiSolidVolumeMute } from "react-icons/bi";
 
 const SPRITE_SIZE = 32; // cada frame da spritesheet
@@ -162,6 +163,9 @@ export default function MapArea({
         position: "relative",
         overflow: "hidden",
         cursor: "pointer",
+        display:"flex",
+        justifyContent:"end",
+        alignItems:"start"
       }}
     >
       {/* Renderiza todos menos o "me" */}
@@ -206,23 +210,30 @@ export default function MapArea({
           }}
         />
       )}
-
+      <lu style={{
+        width:"15%",
+        background:"rgba(49, 9, 9, 0.42)",
+        padding:5,
+      }}>
       {Object.entries(users)
         .filter(([id, u]) => u.id !== me.id)
         .map(([id, u]) => (
          <li index={id} 
           style={{
-            width:"10%",
             borderRadius:8,
             padding:2,
+            paddingLeft:10,
             margin:2,
             marginTop:5,
             fontWeight:"bold",
             color:"rgba(255, 255, 255, 0.93)",
-            background:"rgba(214, 212, 212, 0.63)"
+            background:"rgba(214, 212, 212, 0.63)",
+            listStyle:"none"
+
           }}
          >{u.name}</li>
         ))}
+        </lu>
     </div>
   );
 }

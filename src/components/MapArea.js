@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Border } from "react-bootstrap-icons";
 import { BiSolidVolumeMute } from "react-icons/bi";
+import{remoteV} from "../components/RemoteVideos";
 
 const SPRITE_SIZE = 32; // cada frame da spritesheet
 const FRAMES = 4;       // frames por direção
@@ -9,7 +10,6 @@ const DIRECTIONS = { DOWN: 0, LEFT: 1, RIGHT: 2, UP: 3 };
 function Character({ x, y, name, isMe, direction, moving, audio }) {
   const [frame, setFrame] = useState(0);
 
-  // anima enquanto se move
   useEffect(() => {
     if (!moving) {
       setFrame(0);
@@ -216,7 +216,6 @@ export default function MapArea({
         padding:5,
       }}>
       {Object.entries(users)
-        .filter(([id, u]) => u.id !== me.id)
         .map(([id, u]) => (
          <li index={id} 
           style={{
@@ -227,7 +226,7 @@ export default function MapArea({
             marginTop:5,
             fontWeight:"bold",
             color:"rgba(255, 255, 255, 0.93)",
-            background:"rgba(214, 212, 212, 0.63)",
+            background: u.id === me.id?"rgba(106, 255, 0, 0.46)":"rgba(214, 212, 212, 0.63)",
             listStyle:"none"
 
           }}

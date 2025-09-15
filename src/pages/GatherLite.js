@@ -223,6 +223,7 @@ export default function GatherLite() {
             USER_RADIUS={USER_RADIUS}
             background={background}
             audio={audioEnabled}
+            remoteVideosRef={remoteVideosRef}
           />
         </Col>
       </Row>

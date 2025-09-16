@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Border } from "react-bootstrap-icons";
+import React, { useEffect, useState ,useCallback} from "react";
 import { BiSolidVolumeMute } from "react-icons/bi";
-import{remoteV} from "../components/RemoteVideos";
 
 const SPRITE_SIZE = 32; // cada frame da spritesheet
 const FRAMES = 4;       // frames por direção
@@ -14,8 +12,8 @@ function Character({ x, y, name, isMe, direction, moving, audio }) {
     if (!moving) {
       setFrame(0);
       return;
-    }
-    const interval = setInterval(() => {
+  }
+  const interval = setInterval(() => {
       setFrame((f) => (f + 1) % FRAMES);
     }, 200); // troca de frame a cada 200ms
     return () => clearInterval(interval);
@@ -97,7 +95,7 @@ export default function MapArea({
     }));
   };
 
-  function handleKey(e) {
+  const handleKey = useCallback((e) =>{
     const rect = mapRef.current?.getBoundingClientRect();
     if (!rect) return;
 
@@ -131,7 +129,7 @@ export default function MapArea({
         moving,
       };
     });
-  }
+  },[mapRef,setMe]);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKey);
@@ -144,7 +142,7 @@ export default function MapArea({
         setMe((m) => ({ ...m, moving: false }))
       );
     };
-  }, []);
+  }, [handleKey,setMe]);
 
   return (
     <div

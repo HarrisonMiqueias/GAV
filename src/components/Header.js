@@ -17,7 +17,7 @@ export default function Header() {
       borderBottom: "1px solid #0000006b",
       fontFamily: "Arial, sans-serif",
     }}>
-      SiCAV - Sistema de Comunicação por Áudio e Vídeo
+      SiCAV
     </div>
   );
 }

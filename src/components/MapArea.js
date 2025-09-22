@@ -1,5 +1,6 @@
 import React, { useEffect,useCallback} from "react";
 import Character from '../components/Caracter.js';
+import VideoRemoto from '../components/RemoteVideos.js';
 import "../css/MapArea.css";
 
 const SPRITE_SIZE = 32;
@@ -99,7 +100,9 @@ export default function MapArea({  mapRef,  users,  me,  setMe,  background,  au
       />
 
       {/* Lista de usuário atual */}
-      
+      <div className="remote">
+        <VideoRemoto/>
+      </div>
       <div className="list">
         {Object.entries(users)
         .map(([id, u]) => (

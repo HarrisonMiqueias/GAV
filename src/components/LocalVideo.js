@@ -110,7 +110,6 @@ export default function LocalVideo({
           <Display size={18} />
         </button>
       </div>
-      { videoEnabled &&(
         <div className="camera">
           <video className="video"
             ref={localVideoRef}
@@ -119,7 +118,7 @@ export default function LocalVideo({
             playsInline
           />
         </div>
-      )}
+      
      
       
     </div>

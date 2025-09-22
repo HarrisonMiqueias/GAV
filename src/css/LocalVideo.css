@@ -10,9 +10,8 @@
 .camera {
     display: flex;
     width: 100px;
-    height: 10vh;
+    height: 9vh;
     border-radius: 8px;
-    background: #0000006b;
 }
 
 .peers {
@@ -40,9 +39,9 @@
 
 .video {
     width: 100%;
-    height: 10vh;
+    margin: 3px;
+    height: 9vh;
     border-radius: 8px;
-    border: 1px solid red;
     object-fit: cover;
 }
 

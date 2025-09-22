@@ -22,11 +22,14 @@ export default function ScreenShareModal({ screenVideoRef, onClose, peersRef, lo
           await screenVideoRef.current.play().catch(err => console.warn("Erro play:", err));
         }
 
+       
+
         // envia pros peers
-       Object.values(peersRef.current).forEach(peer => {
+        Object.values(peersRef.current).forEach(peer => {
           const sender = peer._pc.getSenders().find(s => s.track?.kind === "video");
-          if (sender && screenTrack) sender.replaceTrack(screenTrack);
-          else if (screenTrack) peer._pc.addTrack(screenTrack, screenStream);
+          if (sender) {
+            sender.replaceTrack(screenTrack);
+          }
         });
 
 

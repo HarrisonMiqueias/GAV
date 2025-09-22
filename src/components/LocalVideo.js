@@ -1,4 +1,5 @@
 import React from "react";
+import "../css/LocalVideo.css";
 import { CameraVideo, CameraVideoOff, Mic, MicMute, Display } from "react-bootstrap-icons";
 
 export default function LocalVideo({
@@ -9,7 +10,6 @@ export default function LocalVideo({
   setAudioEnabled,
   peersRef,
   localStreamRef,
-  screenVideoRef,
   setIsScreenModalOpen,
 }) {
 
@@ -62,111 +62,16 @@ export default function LocalVideo({
     }
   }
 
-async function startScreenShare() {
-  try {
-    // Recomendo começar sem audio para evitar bloqueios: mude para true só se precisar
-    const screenStream = await navigator.mediaDevices.getDisplayMedia({
-      video: true,
-      audio: false,
-    });
-
-    if (!screenStream) throw new Error("Nenhum stream retornado por getDisplayMedia");
-
-    const screenTrack = screenStream.getVideoTracks()[0];
-    console.log("screenStream tracks:", screenStream.getTracks(), "screenTrack:", screenTrack);
-
-    // atribui ao vídeo do modal e tenta tocar
-    if (localVideoRef.current) {
-      localVideoRef.current.srcObject = screenStream;
-      localVideoRef.current.muted = true;
-      await localVideoRef.current.play().catch(err => console.warn(err)); 
-    }
-
-    //setIsScreenModalOpen(true);
-
-    // envia pra peers (substitui track ou adiciona)
-    Object.values(peersRef.current).forEach(peer => {
-      try {
-        const sender = peer._pc.getSenders().find(s => s.track?.kind === "video");
-        if (sender && screenTrack) {
-          sender.replaceTrack(screenTrack);
-        } else if (screenTrack) {
-          peer._pc.addTrack(screenTrack, screenStream);
-        }
-      } catch (err) {
-        console.warn("Erro ao atualizar peer com track de tela:", err);
-      }
-    });
-
-    // quando usuário parar de compartilhar
-    screenTrack.onended = () => {
-      console.log("Compartilhamento de tela finalizado pelo usuário.");
-      setIsScreenModalOpen(false);
-
-      // tenta restaurar a câmera, se existir
-      const camTrack = localStreamRef.current?.getVideoTracks()[0];
-      Object.values(peersRef.current).forEach(peer => {
-        try {
-          const sender = peer._pc.getSenders().find(s => s.track?.kind === "video");
-          if (sender && camTrack) sender.replaceTrack(camTrack);
-          else if (camTrack) peer._pc.addTrack(camTrack, localStreamRef.current);
-        } catch (err) {
-          console.warn("Erro ao restaurar track da câmera:", err);
-        }
-      });
-
-      // garante que a screenStream pare todos os tracks
-      screenStream.getTracks().forEach(t => {
-        try { t.stop(); } catch(e) {}
-      });
-    };
-  } catch (err) {
-    console.error("Erro ao compartilhar tela:", err);
-  }
-}
-
-
-
-
   return (
-    <div style={{
-      width:"80%",
-      height: 200,
-      padding: 10,
-      border: "1px solid #0000006b",
-      borderRadius: 5,
-      background: "#f8f1f1da",
-      boxShadow: "0 4px 10px rgba(0, 0, 0, 0.78)",
-      flexDirection: "column",
-      fontWeight: "bolder",
-      fontStyle: "italic",
-      overflow: "hidden",
-      display:"flex",
-      gap:10,
-      justifyContent: "center",
-      alignItems:"center",
-    }}>
-      <div alignItems="center">
-        <video 
-        ref={localVideoRef}
-        muted
-        autoPlay
-        playsInline
-        style={{
-          width: 200,
-          height: 150,
-          borderRadius: 10,
-          background: "#0000006b",
-          objectFit: "cover"
-        }}
-      />
+    <div className="local-container">
+      <div className="peers">
+          {/* implementar futuramente para aparecer a foto ou letra caso não tenha foto*/}
       </div>
-
-      <div style={{ display:"flex",gap: 10, justifyContent: "start" }}>
+      <div className="div-button">
         <button
           onClick={videoEnabled ? disableVideo : enableVideo}
-          style={{
-            padding: "6px 12px",
+            style={{
+              padding: "6px 12px",
             backgroundColor: videoEnabled ? "#22c55e" : "#ef4444",
             color: "#fff",
             border: "none",
@@ -205,6 +110,18 @@ async function startScreenShare() {
           <Display size={18} />
         </button>
       </div>
+      { videoEnabled &&(
+        <div className="camera">
+          <video className="video"
+            ref={localVideoRef}
+            muted
+            autoPlay
+            playsInline
+          />
+        </div>
+      )}
+     
+      
     </div>
   );
 }

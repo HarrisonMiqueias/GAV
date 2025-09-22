@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function RemoteVideos({ remoteVideosRef }) {
+export default function RemoteVideos() {
   return (
     <div style={{
       width:"80%",

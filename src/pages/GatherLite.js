@@ -44,7 +44,7 @@ export default function GatherLite() {
   useEffect(() => {
     async function initMedia() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
         localStreamRef.current = stream;
         setVideoEnabled(false);
         setAudioEnabled(true);

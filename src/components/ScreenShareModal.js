@@ -59,6 +59,9 @@ export default function ScreenShareModal({ screenVideoRef, onClose, peersRef, lo
 <div
       style={{
         position: "fixed",
+        width: "100vw",
+        height: "100vh",
+        top: 0,
         inset: 0,
         background: minimized ? "transparent" : "rgba(0,0,0,0.7)",
         display: "flex",

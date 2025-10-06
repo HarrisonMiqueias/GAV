@@ -101,6 +101,7 @@ async function startScreenShare() {
     const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
 
     // Mostra para você mesmo
+
     if (screenVideoRef.current) {
       screenVideoRef.current.srcObject = screenStream;
       await screenVideoRef.current.play();
@@ -541,7 +542,7 @@ function createPeer(peerId, initiator = true) {
             </div>
         <div
           id="remote-videos"
-          style={{ position: "absolute", right: 0, top:50, width: 200}}
+          style={{ position: "absolute", right: 0, top:50, width: 200 }}
         />
         </div>
 

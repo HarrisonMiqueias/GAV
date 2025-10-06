@@ -48,18 +48,19 @@ export default function Character({ x, y, name, isMe, direction, moving, audio }
           imageRendering: "pixelated",
         }}
       >
-        {!audio && (
-          <BiSolidVolumeMute
-            size={18}
-            style={{
-              position: "absolute",
-              bottom: -10,
-              right: -10,
-              color: "#ff0000ff",
-              borderRadius: "50%",
-            }}
-          />
-        )}
+        { isMe === true &&(
+          !audio && (
+            <BiSolidVolumeMute
+              size={18}
+              style={{
+                position: "absolute",
+                bottom: -10,
+                right: -10,
+                color: "#ff0000ff",
+                borderRadius: "50%",
+              }}
+            />)
+         )}
       </div>
     </>
   );

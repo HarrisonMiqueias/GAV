@@ -12,7 +12,7 @@ export default function ScreenShareModal({ screenVideoRef, onClose, peersRef, lo
       try {
         const screenStream = await navigator.mediaDevices.getDisplayMedia({
           video: true,
-          audio: false,
+          audio: true,
         });
 
         const screenTrack = screenStream.getVideoTracks()[0];

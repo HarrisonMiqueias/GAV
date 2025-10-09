@@ -118,9 +118,6 @@ export default function LocalVideo({
             playsInline
           />
         </div>
-      
-     
-      
     </div>
   );
 }

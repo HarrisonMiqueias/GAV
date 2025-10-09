@@ -50,7 +50,7 @@ useEffect(() => {
         audio: true,
       });
       localStreamRef.current = stream;
-      setVideoEnabled(false);
+      setVideoEnabled(true);
       setAudioEnabled(true);
       if (localVideoRef.current) localVideoRef.current.srcObject = stream;
     } catch (err) {

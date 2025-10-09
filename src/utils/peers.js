@@ -56,7 +56,19 @@ if (isScreen && setRemoteScreenStream) {
 
 // Caso normal: vídeo da câmera
 if (!remoteVideosRef.current[peerId]) {
-const container = document.createElement("div");
+  /*const vid = document.createElement("video");
+  vid.id = `remote-${peerId}`;
+  vid.autoplay = true;
+  vid.playsInline = true;
+  vid.style.width = "160px";
+  vid.style.height = "120px";
+  vid.style.borderRadius = "8px";
+  vid.style.margin = "4px";
+  vid.style.objectFit = "cover";
+  vid.style.resize = "both";
+  document.getElementById("remote-videos")?.appendChild(vid);
+  remoteVideosRef.current[peerId] = vid;*/
+  const container = document.createElement("div");
 container.style.position = "relative";
 container.style.display = "inline-block";
 container.style.margin = "4px";
@@ -104,8 +116,9 @@ container.appendChild(expandBtn);
 
 document.getElementById("remote-videos")?.appendChild(container);
 remoteVideosRef.current[peerId] = vid;
-}
 
+  
+}
 
   remoteVideosRef.current[peerId].srcObject = remoteStream;
 });

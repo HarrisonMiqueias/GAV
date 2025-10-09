@@ -50,7 +50,7 @@ useEffect(() => {
         audio: true,
       });
       localStreamRef.current = stream;
-      setVideoEnabled(true);
+      setVideoEnabled(false);
       setAudioEnabled(true);
       if (localVideoRef.current) localVideoRef.current.srcObject = stream;
     } catch (err) {
@@ -180,7 +180,12 @@ return () => socketRef.current.disconnect();
 
 }, [SOCKET_SERVER]);
 
-return ( <div className="container"> <Row className="row-principal"> <Col className="col-principal"> <Row className="row-primario"> <Col className="col-primario"> <MapArea
+return ( 
+<div className="container"> 
+  <Row className="row-principal"> 
+    <Col className="col-principal"> 
+      <Row className="row-primario"> <Col className="col-primario"> 
+        <MapArea
              mapRef={mapRef}
              users={users}
              me={me}
@@ -190,7 +195,12 @@ return ( <div className="container"> <Row className="row-principal"> <Col classN
              audio={audioEnabled}
              remoteVideosRef={remoteVideosRef}
              audioEnabled={audioEnabled}
-           /> </Col> </Row> <Row className="row-secundario"> <Col className="col-secundario"> <LocalVideo
+           /> 
+        </Col> 
+      </Row> 
+      <Row className="row-secundario"> 
+        <Col className="col-secundario"> 
+          <LocalVideo
              localVideoRef={localVideoRef}
              videoEnabled={videoEnabled}
              audioEnabled={audioEnabled}
@@ -200,7 +210,12 @@ return ( <div className="container"> <Row className="row-principal"> <Col classN
              localStreamRef={localStreamRef}
              screenVideoRef={screenVideoRef}
              setIsScreenModalOpen={setIsScreenModalOpen}
-           /> </Col> </Row> </Col> </Row>
+           />  
+        </Col> 
+      </Row> 
+    </Col> 
+  </Row>
+
   {/* ✅ Modal da minha tela */}
   {isScreenModalOpen && (
     <ScreenShareModal
@@ -211,51 +226,7 @@ return ( <div className="container"> <Row className="row-principal"> <Col classN
     />
   )}
 
-  {/* ✅ Exibição correta da tela remota */}
-  {remoteScreenStream && (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100vw",
-        height: "100vh",
-        background: "rgba(0,0,0,0.7)",
-        zIndex: 3000,
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <video
-        ref={remoteScreenVideoRef}
-        autoPlay
-        playsInline
-        style={{
-          maxWidth: "90%",
-          maxHeight: "90%",
-          borderRadius: 10,
-          backgroundColor: "#000",
-        }}
-      />
-      <button
-        onClick={() => setRemoteScreenStream(null)}
-        style={{
-          position: "absolute",
-          top: 16,
-          right: 16,
-          background: "#ef4444",
-          color: "#fff",
-          border: "none",
-          padding: "8px 12px",
-          borderRadius: 6,
-          cursor: "pointer",
-        }}
-      >
-        Fechar
-      </button>
-    </div>
-  )}
+ 
 </div>
 
 );

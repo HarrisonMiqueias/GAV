@@ -56,6 +56,11 @@ if (isScreen && setRemoteScreenStream) {
 
 // Caso normal: vídeo da câmera
 if (!remoteVideosRef.current[peerId]) {
+  const container = document.createElement("div");
+  container.style.position = "relative";
+  container.style.display = "inline-block";
+  container.style.margin = "4px";
+
   const vid = document.createElement("video");
   vid.id = `remote-${peerId}`;
   vid.autoplay = true;
@@ -63,11 +68,42 @@ if (!remoteVideosRef.current[peerId]) {
   vid.style.width = "160px";
   vid.style.height = "120px";
   vid.style.borderRadius = "8px";
-  vid.style.margin = "4px";
   vid.style.objectFit = "cover";
-  document.getElementById("remote-videos")?.appendChild(vid);
+  vid.style.backgroundColor = "#000";
+  vid.style.resize = "both";
+
+  // ✅ Botão de expandir
+  const expandBtn = document.createElement("button");
+  expandBtn.innerText = "⛶"; // símbolo de tela cheia
+  expandBtn.title = "Expandir vídeo";
+  expandBtn.style.position = "absolute";
+  expandBtn.style.bottom = "4px";
+  expandBtn.style.right = "4px";
+  expandBtn.style.background = "rgba(0,0,0,0.6)";
+  expandBtn.style.color = "white";
+  expandBtn.style.border = "none";
+  expandBtn.style.borderRadius = "4px";
+  expandBtn.style.padding = "2px 6px";
+  expandBtn.style.cursor = "pointer";
+  expandBtn.style.fontSize = "14px";
+  expandBtn.style.zIndex = "10";
+
+  // ✅ Ao clicar, entra em modo fullscreen ou sai
+  expandBtn.onclick = () => {
+  if (!document.fullscreenElement) {
+  vid.requestFullscreen?.().catch((err) =>
+  console.error("Erro ao expandir vídeo:", err)
+  );
+  } else {
+  document.exitFullscreen?.();
+  }
+  };
+  container.appendChild(vid);
+  container.appendChild(expandBtn);
+  document.getElementById("remote-videos")?.appendChild(container);
   remoteVideosRef.current[peerId] = vid;
 }
+
 
 remoteVideosRef.current[peerId].srcObject = remoteStream;
 });

@@ -41,27 +41,56 @@ useEffect(() => {
 if (!userNam) navigate("/", { replace: true });
 }, [userNam, navigate]);
 
-// ✅ Inicializa vídeo e áudio desde o início
+// ✅ Inicializa vídeo e áudio, mesmo se o usuário não tiver câmera
 useEffect(() => {
-async function initMedia() {
-try {
-const stream = await navigator.mediaDevices.getUserMedia({
-video: true,
-audio: true,
-});
-localStreamRef.current = stream;
-setVideoEnabled(true);
-setAudioEnabled(true);
-if (localVideoRef.current) localVideoRef.current.srcObject = stream;
-} catch (err) {
-console.error("Não foi possível acessar microfone/câmera:", err);
-}
-}
-initMedia();
-return () => {
-localStreamRef.current?.getTracks().forEach((t) => t.stop());
-};
+  async function initMedia() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
+      localStreamRef.current = stream;
+      setVideoEnabled(true);
+      setAudioEnabled(true);
+      if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+    } catch (err) {
+      console.warn("⚠️ Falha ao acessar câmera, tentando só áudio:", err);
+      try {
+        // 🔁 Tenta apenas o microfone
+        const audioStream = await navigator.mediaDevices.getUserMedia({
+          video: false,
+          audio: true,
+        });
+
+        // ✅ Cria um vídeo falso (canvas preto) para manter o peer funcional
+        const canvas = document.createElement("canvas");
+        canvas.width = 640;
+        canvas.height = 480;
+        const context = canvas.getContext("2d");
+        context.fillStyle = "black";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        const fakeStream = canvas.captureStream(5);
+        const fakeVideoTrack = fakeStream.getVideoTracks()[0];
+
+        audioStream.addTrack(fakeVideoTrack);
+
+        localStreamRef.current = audioStream;
+        setVideoEnabled(false);
+        setAudioEnabled(true);
+        if (localVideoRef.current)
+          localVideoRef.current.srcObject = new MediaStream([fakeVideoTrack]);
+      } catch (err2) {
+        console.error("❌ Nenhum dispositivo de áudio/vídeo disponível:", err2);
+      }
+    }
+  }
+
+  initMedia();
+  return () => {
+    localStreamRef.current?.getTracks().forEach((t) => t.stop());
+  };
 }, []);
+
 
 // Movimentação e detecção de proximidade
 useEffect(() => {

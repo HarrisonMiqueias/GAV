@@ -106,6 +106,7 @@ const dist = Math.sqrt(dx * dx + dy * dy);
     if (dist <= USER_RADIUS && !peersRef.current[id]) {
       createPeer(
         id,
+        u.name,
         true,
         localStreamRef,
         peersRef,
@@ -163,7 +164,6 @@ socketRef.current.on("user-left", (id) => {
 socketRef.current.on("signal", ({ from, data }) => {
   if (!peersRef.current[from]) {
     createPeer(
-      from,
       false,
       localStreamRef,
       peersRef,

@@ -2,6 +2,7 @@ import SimplePeer from "simple-peer";
 
 export function createPeer(
 peerId,
+userName,
 initiator,
 localStreamRef,
 peersRef,
@@ -68,7 +69,7 @@ if (!remoteVideosRef.current[peerId]) {
   vid.style.resize = "both";
   document.getElementById("remote-videos")?.appendChild(vid);
   remoteVideosRef.current[peerId] = vid;*/
-  const container = document.createElement("div");
+ const container = document.createElement("div");
 container.style.position = "relative";
 container.style.display = "inline-block";
 container.style.margin = "4px";
@@ -83,6 +84,20 @@ vid.style.borderRadius = "8px";
 vid.style.objectFit = "cover";
 vid.style.backgroundColor = "#000";
 vid.style.resize = "both";
+
+// ✅ Nome ou identificador do usuário
+  const nameTag = document.createElement("div");
+  nameTag.innerText = userName;//👉 troque por userName se tiver disponível
+  nameTag.style.position = "absolute";
+  nameTag.style.bottom = "4px";
+  nameTag.style.left = "6px";
+  nameTag.style.padding = "2px 6px";
+  nameTag.style.background = "rgba(0, 0, 0, 0.5)";
+  nameTag.style.color = "#fff";
+  nameTag.style.fontSize = "12px";
+  nameTag.style.borderRadius = "4px";
+  nameTag.style.pointerEvents = "none";
+  nameTag.style.zIndex = "9";
 
 // ✅ Botão de expandir
 const expandBtn = document.createElement("button");
@@ -100,6 +115,7 @@ expandBtn.style.cursor = "pointer";
 expandBtn.style.fontSize = "14px";
 expandBtn.style.zIndex = "10";
 
+
 // ✅ Ao clicar, entra em modo fullscreen ou sai
 expandBtn.onclick = () => {
 if (!document.fullscreenElement) {
@@ -113,6 +129,7 @@ document.exitFullscreen?.();
 
 container.appendChild(vid);
 container.appendChild(expandBtn);
+container.appendChild(nameTag); // ✅ adiciona o nome
 
 document.getElementById("remote-videos")?.appendChild(container);
 remoteVideosRef.current[peerId] = vid;

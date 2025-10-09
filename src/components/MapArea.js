@@ -39,10 +39,10 @@ export default function MapArea({ mapRef, users, me, setMe, background, socket,a
           direction = DIRECTIONS.DOWN;
         } else if (e.key === "ArrowLeft") {
           newX = m.x - STEP;
-          direction = DIRECTIONS.RIGHT;
+          direction = DIRECTIONS.LEFT;
         } else if (e.key === "ArrowRight") {
           newX = m.x + STEP;
-          direction = DIRECTIONS.LEFT;
+          direction = DIRECTIONS.RIGHT;
         } else {
           moving = false;
         }

@@ -39,7 +39,7 @@ export default function Character({ x, y, name, isMe, direction, moving, audio }
           top: y - SPRITE_SIZE / 4,
           width: SPRITE_SIZE,
           height: SPRITE_SIZE,
-          backgroundImage: "url('/sprites/char_spritesheet.png')",
+          backgroundImage: "url('/sprites/Character_065.png')",
           backgroundRepeat: "no-repeat",
           backgroundSize: `${SPRITE_SIZE * FRAMES}px ${SPRITE_SIZE * 4}px`,
           backgroundPosition: `-${frame * SPRITE_SIZE}px -${
@@ -49,7 +49,7 @@ export default function Character({ x, y, name, isMe, direction, moving, audio }
         }}
       >
         {
-          !audio && (
+          audio && (
             <BiSolidVolumeMute
               size={18}
               style={{

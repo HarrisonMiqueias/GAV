@@ -15,18 +15,15 @@ window.process = process;
 export default function GatherLite() {
   const SOCKET_SERVER = process.env.REACT_APP_SOCKET_SERVER || "http://localhost:5000";
   const USER_RADIUS = 60;
-
   const location = useLocation();
   const navigate = useNavigate();
   const userNam = location.state?.name;
-
   const [me, setMe] = useState({ id: null, x: 700, y: 300, name: userNam });
   const [users, setUsers] = useState({});
   const [videoEnabled, setVideoEnabled] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [isScreenModalOpen, setIsScreenModalOpen] = useState(false);
   const [remoteScreenStream, setRemoteScreenStream] = useState(null); // 👈 novo modal remoto
-
   const socketRef = useRef(null);
   const peersRef = useRef({});
   const remoteVideosRef = useRef({});
@@ -34,6 +31,7 @@ export default function GatherLite() {
   const localStreamRef = useRef(null);
   const screenVideoRef = useRef(null);
   const mapRef = useRef(null);
+  const remoteScreenVideoRef = useRef(null); // 👈 referência para o vídeo do modal remoto
 
   // Redireciona se não houver usuário
   useEffect(() => {
@@ -54,7 +52,6 @@ export default function GatherLite() {
       }
     }
     initMedia();
-
     return () => {
       localStreamRef.current?.getTracks().forEach((t) => t.stop());
     };
@@ -78,13 +75,12 @@ export default function GatherLite() {
         }
       });
     }, 500);
-
     return () => clearInterval(interval);
   }, [me, users]);
 
 
-  const remoteScreenVideoRef = useRef(null);
-
+  
+  // Atualiza o stream do modal remoto quando a stream mudar
     useEffect(() => {
       if (remoteScreenStream && remoteScreenVideoRef.current) {
         remoteScreenVideoRef.current.srcObject = remoteScreenStream;
@@ -92,7 +88,7 @@ export default function GatherLite() {
     }, [remoteScreenStream]);
 
 
-  // Socket
+  // Socket 
   useEffect(() => {
     socketRef.current = io(SOCKET_SERVER, { transports: ["websocket"] });
 

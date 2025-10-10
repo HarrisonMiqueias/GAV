@@ -57,35 +57,38 @@ if (isScreen && setRemoteScreenStream) {
 
 // Caso normal: vídeo da câmera
 if (!remoteVideosRef.current[peerId]) {
-  /*const vid = document.createElement("video");
+  /*
+    const vid = document.createElement("video");
+    vid.id = `remote-${peerId}`;
+    vid.autoplay = true;
+    vid.playsInline = true;
+    vid.style.width = "160px";
+    vid.style.height = "120px";
+    vid.style.borderRadius = "8px";
+    vid.style.margin = "4px";
+    vid.style.objectFit = "cover";
+    vid.style.resize = "both";
+    document.getElementById("remote-videos")?.appendChild(vid);
+    remoteVideosRef.current[peerId] = vid;
+  */
+  const container = document.createElement("div");
+  container.style.position = "relative";
+  container.style.display = "inline-block";
+  container.style.margin = "4px";
+
+  const vid = document.createElement("video");
   vid.id = `remote-${peerId}`;
   vid.autoplay = true;
   vid.playsInline = true;
   vid.style.width = "160px";
   vid.style.height = "120px";
   vid.style.borderRadius = "8px";
-  vid.style.margin = "4px";
   vid.style.objectFit = "cover";
+  vid.style.backgroundColor = "#000";
   vid.style.resize = "both";
-  document.getElementById("remote-videos")?.appendChild(vid);
-  remoteVideosRef.current[peerId] = vid;*/
- const container = document.createElement("div");
-container.style.position = "relative";
-container.style.display = "inline-block";
-container.style.margin = "4px";
-
-const vid = document.createElement("video");
-vid.id = `remote-${peerId}`;
-vid.autoplay = true;
-vid.playsInline = true;
-vid.style.width = "160px";
-vid.style.height = "120px";
-vid.style.borderRadius = "8px";
-vid.style.objectFit = "cover";
-vid.style.backgroundColor = "#000";
-vid.style.resize = "both";
 
 // ✅ Nome ou identificador do usuário
+/*
   const nameTag = document.createElement("div");
   nameTag.innerText = userName;//👉 troque por userName se tiver disponível
   nameTag.style.position = "absolute";
@@ -98,6 +101,7 @@ vid.style.resize = "both";
   nameTag.style.borderRadius = "4px";
   nameTag.style.pointerEvents = "none";
   nameTag.style.zIndex = "9";
+*/
 
 // ✅ Botão de expandir
 const expandBtn = document.createElement("button");
@@ -117,19 +121,29 @@ expandBtn.style.zIndex = "10";
 
 
 // ✅ Ao clicar, entra em modo fullscreen ou sai
+let expanded = false;
+
 expandBtn.onclick = () => {
-if (!document.fullscreenElement) {
-vid.requestFullscreen?.().catch((err) =>
-console.error("Erro ao expandir vídeo:", err)
-);
-} else {
-document.exitFullscreen?.();
-}
+  if (!expanded) {
+    vid.style.width = "900px";
+    vid.style.height = "570px";
+    vid.style.zIndex = "1000";
+    vid.style.boxShadow = "0 0 10px rgba(0,0,0,0.6)";
+    expandBtn.innerText = "x"; // ícone de recolher
+    expanded = true;
+  } else {
+    vid.style.width = "160px";
+    vid.style.height = "120px";
+    vid.style.zIndex = "1";
+    vid.style.boxShadow = "none";
+    expandBtn.innerText = "⛶"; // ícone de expandir
+    expanded = false;
+  }
 };
 
 container.appendChild(vid);
 container.appendChild(expandBtn);
-container.appendChild(nameTag); // ✅ adiciona o nome
+//container.appendChild(nameTag); // ✅ adiciona o nome
 
 document.getElementById("remote-videos")?.appendChild(container);
 remoteVideosRef.current[peerId] = vid;

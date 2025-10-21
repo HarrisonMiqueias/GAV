@@ -12,7 +12,7 @@ import "../css/GatherLite.css";
 
 export default function GatherLite() {
   // Conexão direta ao servidor Socket.io (string literal)
-  const SOCKET_SERVER = "http://localhost:5000";
+  const SOCKET_SERVER = "https://api-cav.onrender.com";
   const USER_RADIUS = 60;
 
   const location = useLocation();
